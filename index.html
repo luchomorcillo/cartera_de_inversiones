@@ -114,7 +114,7 @@ tr:hover td{background:#fafafa}
 
 <div class="header">
   <div>
-    <h1>📊 Inversiones</h1>
+    <h1>📊 Inversiones Familiares</h1>
     <div style="font-size:10px;opacity:.6;margin-top:2px" id="lastUpd">Cargando...</div>
   </div>
   <div class="hright">
@@ -393,7 +393,6 @@ tr:hover td{background:#fafafa}
 </div><!-- /content -->
 
 <script>
-// ══ CONFIG ══
 var CLIENT_ID    = "270599207285-ueru7itb2165915ln06fh2nf3efv8k59.apps.googleusercontent.com";
 var SCOPES       = "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile";
 var FILE_NAME    = "cartera-v9.json";
@@ -403,7 +402,6 @@ var BASE_VENTAS  = 37;
 var SECTORES_ALL = ["TECNOLOGICO","FINANCIERO","ENERGIA","ETF","CRIPTO","BRASIL","SALUD","BONO","LIQUIDO"];
 var TIPOS_ALL    = ["CEDEAR","AR","BONO","LIQUIDO"];
 
-// ══ DATOS BASE ══
 var POS_INIT = [
   {ticker:"BRK.B",nombre:"Berkshire Hathaway",  tipo:"CEDEAR",sector:"FINANCIERO",  cantidad:1.50, ppc:480.70},
   {ticker:"IEUR", nombre:"iShares MSCI Europe",  tipo:"CEDEAR",sector:"ETF",         cantidad:6.09, ppc:70.18},
@@ -434,83 +432,82 @@ var POS_INIT = [
 ];
 
 var FLUJO_BASE = [
-  {fecha:"2024-04-09",ingresoARS:150000,   egresoARS:0,          mep:1000.69,ingresoUSD:149.90,  egresoUSD:0,        nota:""},
-  {fecha:"2024-04-12",ingresoARS:30000,    egresoARS:0,          mep:1005.46,ingresoUSD:29.84,   egresoUSD:0,        nota:""},
-  {fecha:"2024-04-18",ingresoARS:130000,   egresoARS:0,          mep:1021.92,ingresoUSD:127.21,  egresoUSD:0,        nota:""},
-  {fecha:"2024-04-22",ingresoARS:60000,    egresoARS:0,          mep:1014.98,ingresoUSD:59.11,   egresoUSD:0,        nota:""},
-  {fecha:"2024-06-04",ingresoARS:200000,   egresoARS:0,          mep:1280.80,ingresoUSD:156.15,  egresoUSD:0,        nota:""},
-  {fecha:"2024-06-04",ingresoARS:300000,   egresoARS:0,          mep:1280.80,ingresoUSD:234.23,  egresoUSD:0,        nota:""},
-  {fecha:"2024-06-12",ingresoARS:400000,   egresoARS:0,          mep:1278.94,ingresoUSD:312.76,  egresoUSD:0,        nota:""},
-  {fecha:"2024-06-18",ingresoARS:40000,    egresoARS:0,          mep:1245.49,ingresoUSD:32.12,   egresoUSD:0,        nota:""},
-  {fecha:"2024-06-24",ingresoARS:0,        egresoARS:323,        mep:1295.22,ingresoUSD:0,       egresoUSD:-4.01,    nota:""},
-  {fecha:"2024-06-27",ingresoARS:400000,   egresoARS:0,          mep:1331.96,ingresoUSD:300.31,  egresoUSD:0,        nota:""},
-  {fecha:"2024-06-28",ingresoARS:500,      egresoARS:0,          mep:1347.96,ingresoUSD:0.37,    egresoUSD:0,        nota:""},
-  {fecha:"2024-07-04",ingresoARS:427000,   egresoARS:0,          mep:1395.68,ingresoUSD:305.94,  egresoUSD:0,        nota:""},
-  {fecha:"2024-07-18",ingresoARS:1500000,  egresoARS:0,          mep:1315.29,ingresoUSD:1140.43, egresoUSD:0,        nota:""},
-  {fecha:"2024-08-07",ingresoARS:600000,   egresoARS:0,          mep:1331.95,ingresoUSD:450.47,  egresoUSD:0,        nota:""},
-  {fecha:"2024-08-07",ingresoARS:800000,   egresoARS:0,          mep:1331.95,ingresoUSD:600.62,  egresoUSD:0,        nota:""},
-  {fecha:"2024-08-08",ingresoARS:10000,    egresoARS:0,          mep:1310.45,ingresoUSD:7.63,    egresoUSD:0,        nota:""},
-  {fecha:"2024-08-08",ingresoARS:223000,   egresoARS:0,          mep:1310.45,ingresoUSD:170.17,  egresoUSD:0,        nota:""},
-  {fecha:"2024-08-21",ingresoARS:225000,   egresoARS:0,          mep:1291.75,ingresoUSD:174.18,  egresoUSD:0,        nota:""},
-  {fecha:"2024-09-02",ingresoARS:900000,   egresoARS:0,          mep:1285.01,ingresoUSD:700.38,  egresoUSD:0,        nota:""},
-  {fecha:"2024-10-03",ingresoARS:900000,   egresoARS:0,          mep:1191.74,ingresoUSD:755.20,  egresoUSD:0,        nota:""},
-  {fecha:"2024-11-08",ingresoARS:1500000,  egresoARS:0,          mep:1130.20,ingresoUSD:1327.20, egresoUSD:0,        nota:""},
-  {fecha:"2024-11-13",ingresoARS:863000,   egresoARS:0,          mep:1121.11,ingresoUSD:769.77,  egresoUSD:0,        nota:""},
-  {fecha:"2024-11-13",ingresoARS:1500000,  egresoARS:0,          mep:1121.11,ingresoUSD:1337.96, egresoUSD:0,        nota:""},
-  {fecha:"2024-12-18",ingresoARS:0,        egresoARS:4581175.53, mep:1131.22,ingresoUSD:0,       egresoUSD:-4049.77, nota:"PAGO CAMIONETA"},
-  {fecha:"2025-01-03",ingresoARS:500000,   egresoARS:0,          mep:1165.88,ingresoUSD:428.86,  egresoUSD:0,        nota:""},
-  {fecha:"2025-01-13",ingresoARS:440000,   egresoARS:0,          mep:1163.21,ingresoUSD:378.26,  egresoUSD:0,        nota:""},
-  {fecha:"2025-01-17",ingresoARS:1000000,  egresoARS:0,          mep:1165.84,ingresoUSD:857.75,  egresoUSD:0,        nota:""},
-  {fecha:"2025-01-21",ingresoARS:323000,   egresoARS:0,          mep:1167.61,ingresoUSD:276.63,  egresoUSD:0,        nota:""},
-  {fecha:"2025-01-29",ingresoARS:100000,   egresoARS:0,          mep:1163.36,ingresoUSD:85.96,   egresoUSD:0,        nota:""},
-  {fecha:"2025-01-29",ingresoARS:250000,   egresoARS:0,          mep:1163.36,ingresoUSD:214.89,  egresoUSD:0,        nota:""},
-  {fecha:"2025-02-04",ingresoARS:700000,   egresoARS:0,          mep:1188.00,ingresoUSD:589.23,  egresoUSD:0,        nota:""},
-  {fecha:"2025-03-25",ingresoARS:500000,   egresoARS:0,          mep:1294.30,ingresoUSD:386.31,  egresoUSD:0,        nota:""},
-  {fecha:"2025-04-08",ingresoARS:600000,   egresoARS:0,          mep:1376.58,ingresoUSD:435.86,  egresoUSD:0,        nota:""},
-  {fecha:"2025-04-22",ingresoARS:0,        egresoARS:253044.99,  mep:1140.38,ingresoUSD:0,       egresoUSD:-221.90,  nota:""},
-  {fecha:"2025-05-09",ingresoARS:567000,   egresoARS:0,          mep:1144.11,ingresoUSD:495.58,  egresoUSD:0,        nota:""},
-  {fecha:"2025-05-12",ingresoARS:1000000,  egresoARS:0,          mep:1141.20,ingresoUSD:876.27,  egresoUSD:0,        nota:""},
-  {fecha:"2025-05-14",ingresoARS:400000,   egresoARS:0,          mep:1140.92,ingresoUSD:350.59,  egresoUSD:0,        nota:""},
-  {fecha:"2025-06-17",ingresoARS:10170.50, egresoARS:0,          mep:1190.22,ingresoUSD:8.55,    egresoUSD:0,        nota:""},
-  {fecha:"2025-06-19",ingresoARS:267011.53,egresoARS:0,          mep:1174.03,ingresoUSD:227.43,  egresoUSD:0,        nota:""},
-  {fecha:"2025-07-04",ingresoARS:2000000,  egresoARS:0,          mep:1246.92,ingresoUSD:1603.95, egresoUSD:0,        nota:""},
-  {fecha:"2025-07-04",ingresoARS:0,        egresoARS:761000,     mep:1247.00,ingresoUSD:0,       egresoUSD:-610.26,  nota:""},
-  {fecha:"2025-07-07",ingresoARS:0,        egresoARS:1613000,    mep:1286.28,ingresoUSD:0,       egresoUSD:-1254.00, nota:"COMPRA DÓLARES DEUDA CAMIONETA"},
-  {fecha:"2025-07-14",ingresoARS:400000,   egresoARS:0,          mep:1295.84,ingresoUSD:308.68,  egresoUSD:0,        nota:""},
-  {fecha:"2025-07-23",ingresoARS:1200000,  egresoARS:0,          mep:1264.00,ingresoUSD:949.37,  egresoUSD:0,        nota:""},
-  {fecha:"2025-07-23",ingresoARS:0,        egresoARS:1173000,    mep:1265.00,ingresoUSD:0,       egresoUSD:-927.27,  nota:""},
-  {fecha:"2025-07-25",ingresoARS:120000,   egresoARS:0,          mep:1286.00,ingresoUSD:93.31,   egresoUSD:0,        nota:""},
-  {fecha:"2025-07-25",ingresoARS:0,        egresoARS:800000,     mep:1286.00,ingresoUSD:0,       egresoUSD:-622.08,  nota:""},
-  {fecha:"2025-08-04",ingresoARS:142500,   egresoARS:0,          mep:1356.00,ingresoUSD:105.09,  egresoUSD:0,        nota:""},
-  {fecha:"2025-08-04",ingresoARS:308280,   egresoARS:0,          mep:1356.00,ingresoUSD:227.35,  egresoUSD:0,        nota:""},
-  {fecha:"2025-08-14",ingresoARS:1500000,  egresoARS:0,          mep:1308.00,ingresoUSD:1146.79, egresoUSD:0,        nota:""},
-  {fecha:"2025-08-25",ingresoARS:0,        egresoARS:300000,     mep:1352.00,ingresoUSD:0,       egresoUSD:-221.89,  nota:""},
-  {fecha:"2025-09-01",ingresoARS:1500000,  egresoARS:0,          mep:1357.00,ingresoUSD:1105.38, egresoUSD:0,        nota:""},
-  {fecha:"2025-09-01",ingresoARS:0,        egresoARS:0,          mep:1365.00,ingresoUSD:0,       egresoUSD:-471.79,  nota:""},
-  {fecha:"2025-09-09",ingresoARS:250000,   egresoARS:644000,     mep:1430.00,ingresoUSD:174.83,  egresoUSD:0,        nota:""},
-  {fecha:"2025-10-02",ingresoARS:120000,   egresoARS:0,          mep:1500.00,ingresoUSD:80.00,   egresoUSD:0,        nota:""},
-  {fecha:"2025-10-31",ingresoARS:200000,   egresoARS:0,          mep:1500.00,ingresoUSD:133.33,  egresoUSD:0,        nota:""},
-  {fecha:"2025-11-01",ingresoARS:800000,   egresoARS:0,          mep:1469.00,ingresoUSD:544.59,  egresoUSD:0,        nota:""},
-  {fecha:"2025-12-01",ingresoARS:500000,   egresoARS:0,          mep:1514.00,ingresoUSD:330.25,  egresoUSD:0,        nota:""},
-  {fecha:"2025-12-23",ingresoARS:1500000,  egresoARS:0,          mep:1500.00,ingresoUSD:1000.00, egresoUSD:0,        nota:""},
-  {fecha:"2026-01-06",ingresoARS:1500000,  egresoARS:0,          mep:1450.00,ingresoUSD:1034.48, egresoUSD:0,        nota:""},
-  {fecha:"2026-03-02",ingresoARS:1200000,  egresoARS:0,          mep:1440.00,ingresoUSD:833.33,  egresoUSD:0,        nota:""},
-  {fecha:"2026-04-10",ingresoARS:3000000,  egresoARS:0,          mep:1460.00,ingresoUSD:2054.79, egresoUSD:0,        nota:""}
+  {fecha:"2024-04-09",ingresoARS:150000,egresoARS:0,mep:1000.69,ingresoUSD:149.90,egresoUSD:0,nota:""},
+  {fecha:"2024-04-12",ingresoARS:30000,egresoARS:0,mep:1005.46,ingresoUSD:29.84,egresoUSD:0,nota:""},
+  {fecha:"2024-04-18",ingresoARS:130000,egresoARS:0,mep:1021.92,ingresoUSD:127.21,egresoUSD:0,nota:""},
+  {fecha:"2024-04-22",ingresoARS:60000,egresoARS:0,mep:1014.98,ingresoUSD:59.11,egresoUSD:0,nota:""},
+  {fecha:"2024-06-04",ingresoARS:200000,egresoARS:0,mep:1280.80,ingresoUSD:156.15,egresoUSD:0,nota:""},
+  {fecha:"2024-06-04",ingresoARS:300000,egresoARS:0,mep:1280.80,ingresoUSD:234.23,egresoUSD:0,nota:""},
+  {fecha:"2024-06-12",ingresoARS:400000,egresoARS:0,mep:1278.94,ingresoUSD:312.76,egresoUSD:0,nota:""},
+  {fecha:"2024-06-18",ingresoARS:40000,egresoARS:0,mep:1245.49,ingresoUSD:32.12,egresoUSD:0,nota:""},
+  {fecha:"2024-06-24",ingresoARS:0,egresoARS:323,mep:1295.22,ingresoUSD:0,egresoUSD:-4.01,nota:""},
+  {fecha:"2024-06-27",ingresoARS:400000,egresoARS:0,mep:1331.96,ingresoUSD:300.31,egresoUSD:0,nota:""},
+  {fecha:"2024-06-28",ingresoARS:500,egresoARS:0,mep:1347.96,ingresoUSD:0.37,egresoUSD:0,nota:""},
+  {fecha:"2024-07-04",ingresoARS:427000,egresoARS:0,mep:1395.68,ingresoUSD:305.94,egresoUSD:0,nota:""},
+  {fecha:"2024-07-18",ingresoARS:1500000,egresoARS:0,mep:1315.29,ingresoUSD:1140.43,egresoUSD:0,nota:""},
+  {fecha:"2024-08-07",ingresoARS:600000,egresoARS:0,mep:1331.95,ingresoUSD:450.47,egresoUSD:0,nota:""},
+  {fecha:"2024-08-07",ingresoARS:800000,egresoARS:0,mep:1331.95,ingresoUSD:600.62,egresoUSD:0,nota:""},
+  {fecha:"2024-08-08",ingresoARS:10000,egresoARS:0,mep:1310.45,ingresoUSD:7.63,egresoUSD:0,nota:""},
+  {fecha:"2024-08-08",ingresoARS:223000,egresoARS:0,mep:1310.45,ingresoUSD:170.17,egresoUSD:0,nota:""},
+  {fecha:"2024-08-21",ingresoARS:225000,egresoARS:0,mep:1291.75,ingresoUSD:174.18,egresoUSD:0,nota:""},
+  {fecha:"2024-09-02",ingresoARS:900000,egresoARS:0,mep:1285.01,ingresoUSD:700.38,egresoUSD:0,nota:""},
+  {fecha:"2024-10-03",ingresoARS:900000,egresoARS:0,mep:1191.74,ingresoUSD:755.20,egresoUSD:0,nota:""},
+  {fecha:"2024-11-08",ingresoARS:1500000,egresoARS:0,mep:1130.20,ingresoUSD:1327.20,egresoUSD:0,nota:""},
+  {fecha:"2024-11-13",ingresoARS:863000,egresoARS:0,mep:1121.11,ingresoUSD:769.77,egresoUSD:0,nota:""},
+  {fecha:"2024-11-13",ingresoARS:1500000,egresoARS:0,mep:1121.11,ingresoUSD:1337.96,egresoUSD:0,nota:""},
+  {fecha:"2024-12-18",ingresoARS:0,egresoARS:4581175.53,mep:1131.22,ingresoUSD:0,egresoUSD:-4049.77,nota:"PAGO CAMIONETA"},
+  {fecha:"2025-01-03",ingresoARS:500000,egresoARS:0,mep:1165.88,ingresoUSD:428.86,egresoUSD:0,nota:""},
+  {fecha:"2025-01-13",ingresoARS:440000,egresoARS:0,mep:1163.21,ingresoUSD:378.26,egresoUSD:0,nota:""},
+  {fecha:"2025-01-17",ingresoARS:1000000,egresoARS:0,mep:1165.84,ingresoUSD:857.75,egresoUSD:0,nota:""},
+  {fecha:"2025-01-21",ingresoARS:323000,egresoARS:0,mep:1167.61,ingresoUSD:276.63,egresoUSD:0,nota:""},
+  {fecha:"2025-01-29",ingresoARS:100000,egresoARS:0,mep:1163.36,ingresoUSD:85.96,egresoUSD:0,nota:""},
+  {fecha:"2025-01-29",ingresoARS:250000,egresoARS:0,mep:1163.36,ingresoUSD:214.89,egresoUSD:0,nota:""},
+  {fecha:"2025-02-04",ingresoARS:700000,egresoARS:0,mep:1188.00,ingresoUSD:589.23,egresoUSD:0,nota:""},
+  {fecha:"2025-03-25",ingresoARS:500000,egresoARS:0,mep:1294.30,ingresoUSD:386.31,egresoUSD:0,nota:""},
+  {fecha:"2025-04-08",ingresoARS:600000,egresoARS:0,mep:1376.58,ingresoUSD:435.86,egresoUSD:0,nota:""},
+  {fecha:"2025-04-22",ingresoARS:0,egresoARS:253044.99,mep:1140.38,ingresoUSD:0,egresoUSD:-221.90,nota:""},
+  {fecha:"2025-05-09",ingresoARS:567000,egresoARS:0,mep:1144.11,ingresoUSD:495.58,egresoUSD:0,nota:""},
+  {fecha:"2025-05-12",ingresoARS:1000000,egresoARS:0,mep:1141.20,ingresoUSD:876.27,egresoUSD:0,nota:""},
+  {fecha:"2025-05-14",ingresoARS:400000,egresoARS:0,mep:1140.92,ingresoUSD:350.59,egresoUSD:0,nota:""},
+  {fecha:"2025-06-17",ingresoARS:10170.50,egresoARS:0,mep:1190.22,ingresoUSD:8.55,egresoUSD:0,nota:""},
+  {fecha:"2025-06-19",ingresoARS:267011.53,egresoARS:0,mep:1174.03,ingresoUSD:227.43,egresoUSD:0,nota:""},
+  {fecha:"2025-07-04",ingresoARS:2000000,egresoARS:0,mep:1246.92,ingresoUSD:1603.95,egresoUSD:0,nota:""},
+  {fecha:"2025-07-04",ingresoARS:0,egresoARS:761000,mep:1247.00,ingresoUSD:0,egresoUSD:-610.26,nota:""},
+  {fecha:"2025-07-07",ingresoARS:0,egresoARS:1613000,mep:1286.28,ingresoUSD:0,egresoUSD:-1254.00,nota:"COMPRA DÓLARES DEUDA CAMIONETA"},
+  {fecha:"2025-07-14",ingresoARS:400000,egresoARS:0,mep:1295.84,ingresoUSD:308.68,egresoUSD:0,nota:""},
+  {fecha:"2025-07-23",ingresoARS:1200000,egresoARS:0,mep:1264.00,ingresoUSD:949.37,egresoUSD:0,nota:""},
+  {fecha:"2025-07-23",ingresoARS:0,egresoARS:1173000,mep:1265.00,ingresoUSD:0,egresoUSD:-927.27,nota:""},
+  {fecha:"2025-07-25",ingresoARS:120000,egresoARS:0,mep:1286.00,ingresoUSD:93.31,egresoUSD:0,nota:""},
+  {fecha:"2025-07-25",ingresoARS:0,egresoARS:800000,mep:1286.00,ingresoUSD:0,egresoUSD:-622.08,nota:""},
+  {fecha:"2025-08-04",ingresoARS:142500,egresoARS:0,mep:1356.00,ingresoUSD:105.09,egresoUSD:0,nota:""},
+  {fecha:"2025-08-04",ingresoARS:308280,egresoARS:0,mep:1356.00,ingresoUSD:227.35,egresoUSD:0,nota:""},
+  {fecha:"2025-08-14",ingresoARS:1500000,egresoARS:0,mep:1308.00,ingresoUSD:1146.79,egresoUSD:0,nota:""},
+  {fecha:"2025-08-25",ingresoARS:0,egresoARS:300000,mep:1352.00,ingresoUSD:0,egresoUSD:-221.89,nota:""},
+  {fecha:"2025-09-01",ingresoARS:1500000,egresoARS:0,mep:1357.00,ingresoUSD:1105.38,egresoUSD:0,nota:""},
+  {fecha:"2025-09-01",ingresoARS:0,egresoARS:0,mep:1365.00,ingresoUSD:0,egresoUSD:-471.79,nota:""},
+  {fecha:"2025-09-09",ingresoARS:250000,egresoARS:644000,mep:1430.00,ingresoUSD:174.83,egresoUSD:0,nota:""},
+  {fecha:"2025-10-02",ingresoARS:120000,egresoARS:0,mep:1500.00,ingresoUSD:80.00,egresoUSD:0,nota:""},
+  {fecha:"2025-10-31",ingresoARS:200000,egresoARS:0,mep:1500.00,ingresoUSD:133.33,egresoUSD:0,nota:""},
+  {fecha:"2025-11-01",ingresoARS:800000,egresoARS:0,mep:1469.00,ingresoUSD:544.59,egresoUSD:0,nota:""},
+  {fecha:"2025-12-01",ingresoARS:500000,egresoARS:0,mep:1514.00,ingresoUSD:330.25,egresoUSD:0,nota:""},
+  {fecha:"2025-12-23",ingresoARS:1500000,egresoARS:0,mep:1500.00,ingresoUSD:1000.00,egresoUSD:0,nota:""},
+  {fecha:"2026-01-06",ingresoARS:1500000,egresoARS:0,mep:1450.00,ingresoUSD:1034.48,egresoUSD:0,nota:""},
+  {fecha:"2026-03-02",ingresoARS:1200000,egresoARS:0,mep:1440.00,ingresoUSD:833.33,egresoUSD:0,nota:""},
+  {fecha:"2026-04-10",ingresoARS:3000000,egresoARS:0,mep:1460.00,ingresoUSD:2054.79,egresoUSD:0,nota:""}
 ];
 
 var RESUMEN_BASE = [
-  {fecha:"2026-04-13",ticker:"EWZ", cant:22,    pc:25.99, pv:41.54, gp:342.10, ccl:1464, tipo:"CEDEAR"},
-  {fecha:"2026-04-10",ticker:"CAT", cant:0.95,  pc:382.13,pv:790.80,gp:388.24, ccl:1476, tipo:"CEDEAR"},
-  {fecha:"2026-04-21",ticker:"UNH", cant:3.15,  pc:327.45,pv:352.15,gp:77.81,  ccl:1472, tipo:"CEDEAR"},
-  {fecha:"2026-04-07",ticker:"YPF", cant:45,    pc:27.00, pv:43.60, gp:747.00, ccl:1487, tipo:"CEDEAR"},
-  {fecha:"2026-03-31",ticker:"VIST",cant:16.7,  pc:58.47, pv:74.84, gp:273.38, ccl:1475, tipo:"CEDEAR"},
-  {fecha:"2026-01-30",ticker:"VIST",cant:5.6,   pc:45.35, pv:60.40, gp:84.28,  ccl:1458, tipo:"CEDEAR"},
-  {fecha:"2026-01-29",ticker:"VIST",cant:15.66, pc:40.08, pv:60.82, gp:324.79, ccl:1458, tipo:"CEDEAR"},
-  {fecha:"2026-04-14",ticker:"ALUA",cant:392,   pc:0.69,  pv:0.72,  gp:11.80,  ccl:1397, tipo:"ACCIONES"},
-  {fecha:"2026-04-14",ticker:"LOMA",cant:62,    pc:2.24,  pv:2.46,  gp:13.64,  ccl:1402, tipo:"ACCIONES"}
+  {fecha:"2026-04-13",ticker:"EWZ",cant:22,pc:25.99,pv:41.54,gp:342.10,ccl:1464,tipo:"CEDEAR"},
+  {fecha:"2026-04-10",ticker:"CAT",cant:0.95,pc:382.13,pv:790.80,gp:388.24,ccl:1476,tipo:"CEDEAR"},
+  {fecha:"2026-04-21",ticker:"UNH",cant:3.15,pc:327.45,pv:352.15,gp:77.81,ccl:1472,tipo:"CEDEAR"},
+  {fecha:"2026-04-07",ticker:"YPF",cant:45,pc:27.00,pv:43.60,gp:747.00,ccl:1487,tipo:"CEDEAR"},
+  {fecha:"2026-03-31",ticker:"VIST",cant:16.7,pc:58.47,pv:74.84,gp:273.38,ccl:1475,tipo:"CEDEAR"},
+  {fecha:"2026-01-30",ticker:"VIST",cant:5.6,pc:45.35,pv:60.40,gp:84.28,ccl:1458,tipo:"CEDEAR"},
+  {fecha:"2026-01-29",ticker:"VIST",cant:15.66,pc:40.08,pv:60.82,gp:324.79,ccl:1458,tipo:"CEDEAR"},
+  {fecha:"2026-04-14",ticker:"ALUA",cant:392,pc:0.69,pv:0.72,gp:11.80,ccl:1397,tipo:"ACCIONES"},
+  {fecha:"2026-04-14",ticker:"LOMA",cant:62,pc:2.24,pv:2.46,gp:13.64,ccl:1402,tipo:"ACCIONES"}
 ];
 
-// ══ STATE ══
 var posiciones  = JSON.parse(JSON.stringify(POS_INIT));
 var flujos      = JSON.parse(JSON.stringify(FLUJO_BASE));
 var resumenOps  = JSON.parse(JSON.stringify(RESUMEN_BASE));
@@ -520,34 +517,26 @@ var cotiz       = {ccl:1200, mep:1150};
 var precios     = {};
 var accessToken = null, driveFileId = null, saveTimer = null;
 var chartPerf   = null, chartRend = null, chartFlujo = null;
-var _cacheAR    = null, _cacheARts = 0;
 
 function clonar(a){ return JSON.parse(JSON.stringify(a)); }
 
-// ══ HELPERS ══
-function getExtraPos(ticker){
-  return extraPos.findIndex(function(p){ return p.ticker === ticker; });
-}
-function getBasePos(ticker){
-  return POS_INIT.findIndex(function(p){ return p.ticker === ticker; });
-}
+function getExtraPos(ticker){ return extraPos.findIndex(function(p){ return p.ticker===ticker; }); }
+function getBasePos(ticker){ return POS_INIT.findIndex(function(p){ return p.ticker===ticker; }); }
 function upsertExtraPos(ticker, cambios){
   var idxE = getExtraPos(ticker);
-  if(idxE >= 0){
-    Object.assign(extraPos[idxE], cambios);
-  } else {
+  if(idxE >= 0){ Object.assign(extraPos[idxE], cambios); }
+  else {
     var idxB = getBasePos(ticker);
-    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker, nombre:ticker, tipo:"CEDEAR", sector:"TECNOLOGICO", cantidad:0, ppc:0};
+    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker,nombre:ticker,tipo:"CEDEAR",sector:"TECNOLOGICO",cantidad:0,ppc:0};
     extraPos.push(Object.assign(base, cambios));
   }
 }
 
-// ══ MEP ══
 function editarMEP(){
-  var nuevo = prompt("💱 Dólar MEP — valor actual\n(rava.com / invertironline)\n\nActual: $"+fmt(cotiz.mep), cotiz.mep);
-  if(nuevo === null) return;
+  var nuevo = prompt("💱 Dólar MEP\n\nActual: $"+fmt(cotiz.mep), cotiz.mep);
+  if(nuevo===null) return;
   var v = parseFloat(String(nuevo).replace(",","."));
-  if(isNaN(v) || v < 100){ alert("Valor inválido."); return; }
+  if(isNaN(v)||v<100){ alert("Valor inválido."); return; }
   cotiz.mep = v;
   localStorage.setItem("mep_manual", v);
   actualizarMEPUI();
@@ -560,7 +549,6 @@ function actualizarMEPUI(){
   document.getElementById("fl-mep").value = cotiz.mep;
 }
 
-// ══ MERGE STATE ══
 function reconstruirEstado(d){
   posiciones  = clonar(POS_INIT);
   extraPos    = d.extraPos    || [];
@@ -568,25 +556,20 @@ function reconstruirEstado(d){
   extraVentas = d.extraVentas || [];
   alertas     = d.alertas     || [];
   extraPos.forEach(function(ep){
-    var i = posiciones.findIndex(function(p){ return p.ticker === ep.ticker; });
+    var i = posiciones.findIndex(function(p){ return p.ticker===ep.ticker; });
     if(i >= 0){
       posiciones[i].nombre   = ep.nombre   || posiciones[i].nombre;
       posiciones[i].sector   = ep.sector   || posiciones[i].sector;
       posiciones[i].tipo     = ep.tipo     || posiciones[i].tipo;
       posiciones[i].cantidad = ep.cantidad != null ? ep.cantidad : posiciones[i].cantidad;
       posiciones[i].ppc      = ep.ppc      != null ? ep.ppc      : posiciones[i].ppc;
-    } else {
-      posiciones.push(clonar(ep));
-    }
+    } else { posiciones.push(clonar(ep)); }
   });
   flujos     = clonar(FLUJO_BASE).concat(extraFlujos);
   resumenOps = clonar(RESUMEN_BASE).concat(extraVentas);
 }
-function estadoParaDrive(){
-  return {extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas, v:9, lastSync:new Date().toISOString()};
-}
+function estadoParaDrive(){ return {extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas,v:9,lastSync:new Date().toISOString()}; }
 
-// ══ GOOGLE DRIVE ══
 function cargarGoogleSDK(){
   return new Promise(function(res){
     if(window.google){ res(); return; }
@@ -599,8 +582,8 @@ function cargarGoogleSDK(){
 function loginGoogle(){
   cargarGoogleSDK().then(function(){
     google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID, scope: SCOPES,
-      callback: function(resp){
+      client_id:CLIENT_ID, scope:SCOPES,
+      callback:function(resp){
         if(resp.error){ alert("Error: "+resp.error); return; }
         accessToken = resp.access_token;
         localStorage.setItem("gtoken_ts", Date.now());
@@ -616,12 +599,12 @@ function ocultarLoginScreen(){
   document.getElementById("user-pill").style.display    = "flex";
 }
 function renovarTokenSilencioso(){
-  return new Promise(function(res, rej){
+  return new Promise(function(res,rej){
     cargarGoogleSDK().then(function(){
       try{
         google.accounts.oauth2.initTokenClient({
-          client_id: CLIENT_ID, scope: SCOPES, prompt: "",
-          callback: function(resp){
+          client_id:CLIENT_ID, scope:SCOPES, prompt:"",
+          callback:function(resp){
             if(resp.error){ rej(resp.error); return; }
             accessToken = resp.access_token;
             localStorage.setItem("gtoken_ts", Date.now());
@@ -635,7 +618,7 @@ function renovarTokenSilencioso(){
 function intentarRestaurarSesion(){
   var ts = localStorage.getItem("gtoken_ts");
   if(!ts) return;
-  if((Date.now() - parseInt(ts)) / 60000 < 55){
+  if((Date.now()-parseInt(ts))/60000 < 55){
     renovarTokenSilencioso()
     .then(function(){ mostrarUsuario(); cargarDesdeDrive().then(function(){ ocultarLoginScreen(); loadAll(); }); })
     .catch(function(){});
@@ -644,422 +627,417 @@ function intentarRestaurarSesion(){
 function mostrarUsuario(){
   fetch("https://www.googleapis.com/oauth2/v2/userinfo",{headers:{Authorization:"Bearer "+accessToken}})
   .then(function(r){ return r.json(); })
-  .then(function(d){ document.getElementById("user-nm").textContent = d.given_name||""; document.getElementById("user-av").src = d.picture||""; })
+  .then(function(d){ document.getElementById("user-nm").textContent=d.given_name||""; document.getElementById("user-av").src=d.picture||""; })
   .catch(function(){});
 }
 function logout(){
   if(!confirm("¿Cerrar sesión?")) return;
-  accessToken = null; driveFileId = null;
+  accessToken=null; driveFileId=null;
   localStorage.removeItem("gtoken_ts");
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("btn-logout").style.display   = "none";
-  document.getElementById("user-pill").style.display    = "none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("btn-logout").style.display="none";
+  document.getElementById("user-pill").style.display="none";
 }
 function buscarArchivoEnDrive(){
   return fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='"+FILE_NAME+"'&fields=files(id)",{headers:{Authorization:"Bearer "+accessToken}})
-  .then(function(r){ return r.json(); }).then(function(d){ return d.files && d.files.length > 0 ? d.files[0].id : null; });
+  .then(function(r){ return r.json(); }).then(function(d){ return d.files&&d.files.length>0?d.files[0].id:null; });
 }
 function leerArchivoDrive(id){
   return fetch("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media",{headers:{Authorization:"Bearer "+accessToken}}).then(function(r){ return r.json(); });
 }
 function crearArchivoDrive(datos){
-  var f = new FormData();
-  f.append("metadata", new Blob([JSON.stringify({name:FILE_NAME,parents:["appDataFolder"]})],{type:"application/json"}));
-  f.append("file",     new Blob([JSON.stringify(datos)],{type:"application/json"}));
+  var f=new FormData();
+  f.append("metadata",new Blob([JSON.stringify({name:FILE_NAME,parents:["appDataFolder"]})],{type:"application/json"}));
+  f.append("file",new Blob([JSON.stringify(datos)],{type:"application/json"}));
   return fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",{method:"POST",headers:{Authorization:"Bearer "+accessToken},body:f})
   .then(function(r){ return r.json(); }).then(function(d){ return d.id; });
 }
-function actualizarArchivoDrive(id, datos){
+function actualizarArchivoDrive(id,datos){
   return fetch("https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media",
     {method:"PATCH",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify(datos)});
 }
 function cargarDesdeDrive(){
   return buscarArchivoEnDrive().then(function(id){
-    driveFileId = id;
+    driveFileId=id;
     if(id){ return leerArchivoDrive(id).then(function(d){ reconstruirEstado(d); return guardarEnDriveAhora(); }); }
     else   { reconstruirEstado({}); return guardarEnDriveAhora(); }
   }).catch(function(e){ console.error("Drive error:",e); reconstruirEstado({}); });
 }
-function syncBar(msg, color){
-  var b = document.getElementById("sync-bar");
-  b.style.background = color || "#1e7e34";
-  b.textContent = msg; b.style.display = "block";
-  setTimeout(function(){ b.style.display = "none"; }, 3000);
+function syncBar(msg,color){
+  var b=document.getElementById("sync-bar");
+  b.style.background=color||"#1e7e34";
+  b.textContent=msg; b.style.display="block";
+  setTimeout(function(){ b.style.display="none"; },3000);
 }
 function guardarEnDriveAhora(){
   if(!accessToken) return Promise.resolve();
   syncBar("💾 Guardando...");
-  var datos = estadoParaDrive();
-  var p = driveFileId
-    ? actualizarArchivoDrive(driveFileId, datos)
-    : crearArchivoDrive(datos).then(function(id){ driveFileId = id; });
+  var datos=estadoParaDrive();
+  var p=driveFileId
+    ? actualizarArchivoDrive(driveFileId,datos)
+    : crearArchivoDrive(datos).then(function(id){ driveFileId=id; });
   return p.then(function(){ syncBar("✅ Guardado"); }).catch(function(){ syncBar("⚠️ Error guardando","#b71c1c"); });
 }
-function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(guardarEnDriveAhora, 2000); }
+function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(guardarEnDriveAhora,2000); }
 
-// ══ COTIZACIONES ══
 function fetchCotizaciones(){
   return fetch("https://dolarapi.com/v1/dolares/contadoconliqui")
   .then(function(r){ return r.json(); })
-  .then(function(d){ if(d.venta && d.venta > 100) cotiz.ccl = d.venta; })
+  .then(function(d){ if(d.venta&&d.venta>100) cotiz.ccl=d.venta; })
   .catch(function(){})
   .then(function(){
-    return fetch("https://api.allorigins.win/get?url="+encodeURIComponent("https://dolarapi.com/v1/dolares/bolsa"))
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      var data = JSON.parse(d.contents);
-      if(data.venta && data.venta > 100){
-        cotiz.mep = data.venta;
-        localStorage.removeItem("mep_manual");
-      }
-    })
-    .catch(function(){
-      var mepManual = localStorage.getItem("mep_manual");
-      cotiz.mep = (mepManual && parseFloat(mepManual) > 100)
-        ? parseFloat(mepManual)
-        : Math.round(cotiz.ccl * 0.98 * 100) / 100;
-    });
+    var mepManual = localStorage.getItem("mep_manual");
+    if(mepManual && parseFloat(mepManual)>100){
+      cotiz.mep = parseFloat(mepManual);
+      return;
+    }
+    cotiz.mep = Math.round(cotiz.ccl*0.98*100)/100;
   })
   .then(function(){
-    document.getElementById("hd-ccl").textContent = "$"+fmt(cotiz.ccl);
-    document.getElementById("c-ccl").value = cotiz.ccl;
-    document.getElementById("v-ccl").value = cotiz.ccl;
+    document.getElementById("hd-ccl").textContent="$"+fmt(cotiz.ccl);
+    document.getElementById("c-ccl").value=cotiz.ccl;
+    document.getElementById("v-ccl").value=cotiz.ccl;
     actualizarMEPUI();
   });
 }
 
-// ══ PRECIOS ══
-function getARData(){
-  var now = Date.now();
-  if(_cacheAR && now - _cacheARts < 60000) return Promise.resolve(_cacheAR);
+// ══ PRECIOS AR — fetch directo sin caché para garantizar pct_change fresco ══
+function fetchARData(){
   return fetch("https://data912.com/live/arg_stocks")
   .then(function(r){ return r.json(); })
-  .then(function(a){ _cacheAR = a; _cacheARts = Date.now(); return a; })
   .catch(function(){ return []; });
 }
 
 function fetchFinnhub(tk){
-  var symOpt1 = tk;
-  var symOpt2 = tk.replace(".", "-"); // Prepara la versión con guion para Finnhub
-  return fetch("https://finnhub.io/api/v1/quote?symbol="+symOpt1+"&token="+FINNHUB_KEY)
+  var s1=tk, s2=tk.replace(".","-");
+  return fetch("https://finnhub.io/api/v1/quote?symbol="+s1+"&token="+FINNHUB_KEY)
   .then(function(r){ return r.json(); })
-  .then(function(d){ 
-    if(d.c && d.c > 0) return {precio:d.c, varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0, precioARS:null};
-    if(symOpt1 !== symOpt2){
-        return fetch("https://finnhub.io/api/v1/quote?symbol="+symOpt2+"&token="+FINNHUB_KEY)
-        .then(function(r2){ return r2.json(); })
-        .then(function(d2){
-           return d2.c && d2.c > 0 ? {precio:d2.c, varHoy:d2.pc>0?((d2.c-d2.pc)/d2.pc*100):0, precioARS:null} : null;
-        }).catch(function(){ return null; });
+  .then(function(d){
+    if(d.c&&d.c>0) return {precio:d.c,varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0,precioARS:null};
+    if(s1!==s2){
+      return fetch("https://finnhub.io/api/v1/quote?symbol="+s2+"&token="+FINNHUB_KEY)
+      .then(function(r2){ return r2.json(); })
+      .then(function(d2){ return d2.c&&d2.c>0?{precio:d2.c,varHoy:d2.pc>0?((d2.c-d2.pc)/d2.pc*100):0,precioARS:null}:null; })
+      .catch(function(){ return null; });
     }
-    return null;
-  })
-  .catch(function(){ return null; });
-}
-
-function fetchBono(tk){
-  var map = {AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
-  var sym = map[tk];
-  if(!sym) return Promise.resolve(null);
-  return fetch("https://data912.com/live/arg_gov")
-  .then(function(r){ return r.json(); })
-  .then(function(arr){
-    var b = arr.find(function(x){ return (x.ticker||x.symbol||"") === sym; });
-    if(b){ var p = parseFloat(b.c||b.price||b.last||0); if(p > 0) return {precio:p, varHoy:0, precioARS:null}; }
     return null;
   }).catch(function(){ return null; });
 }
 
-// NUEVO EXTRACTOR BLINDADO PARA ARGENTINA
-// ══ REEMPLAZAR solo esta función en el código ══
+function fetchBono(tk){
+  var map={AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
+  var sym=map[tk];
+  if(!sym) return Promise.resolve(null);
+  return fetch("https://data912.com/live/arg_gov")
+  .then(function(r){ return r.json(); })
+  .then(function(arr){
+    var b=arr.find(function(x){ return (x.ticker||x.symbol||"")===sym; });
+    if(b){ var p=parseFloat(b.c||b.price||b.last||0); if(p>0) return {precio:p,varHoy:0,precioARS:null}; }
+    return null;
+  }).catch(function(){ return null; });
+}
 
-function fetchARfromData(tk, arr){
-  var tkUp = tk.toUpperCase();
-
-  // Buscar por "symbol" (así viene en la API de data912)
+// ══ EXTRACTOR AR BLINDADO Y SIN CACHÉ ══
+function extraerPrecioAR(tk, arr){
   var item = arr.find(function(x){
-    return (x.symbol || "").toUpperCase() === tkUp;
+    return (x.ticker||x.symbol||"").toUpperCase() === tk.toUpperCase();
   });
-
   if(item){
-    var pARS = parseFloat(item.c || 0);
+    var pARS = parseFloat(item.c||item.price||item.last||item.ultimo||0);
     if(pARS > 0){
-      var mep = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
-      var pUSD = pARS / mep;
-
-      // pct_change ya viene como porcentaje listo (ej: 4.63 = +4.63%)
-      var varHoy = (item.pct_change !== undefined && item.pct_change !== null) ? parseFloat(item.pct_change) : 0;
+      var mep  = (cotiz.mep && cotiz.mep>100) ? cotiz.mep : 1150;
       
+      // Buscamos cualquier variación de nombre que traiga la API
+      var rawVar = item.var || item.variacion || item.change || item.change_pct || item.pct_change || item.pct || item.dp || item.cp;
+      var varHoy = 0;
+      
+      if (rawVar !== undefined && rawVar !== null && rawVar !== "") {
+          var stringVar = String(rawVar).replace("%", "").replace(",", ".");
+          varHoy = parseFloat(stringVar);
+      }
+      
+      // Cálculo manual de respaldo
+      if (isNaN(varHoy) || varHoy === 0) {
+          var prev = parseFloat(String(item.pc || item.pclose || item.prev || item.cierre_anterior || item.o || 0).replace(",", "."));
+          if (prev > 0 && prev !== pARS) {
+              varHoy = ((pARS - prev) / prev * 100);
+          }
+      }
 
-      return Promise.resolve({ precio: pUSD, varHoy: varHoy, precioARS: pARS });
+      return {precio:pARS/mep, varHoy:isNaN(varHoy)?0:varHoy, precioARS:pARS};
     }
   }
-
-  return Promise.resolve(null);
+  return null;
 }
 
 function getMercadoTicker(tk){
-  var pos = posiciones.find(function(p){ return p.ticker === tk; });
-  if(pos) return pos.tipo === "AR" ? "AR" : pos.tipo === "BONO" ? "BONO" : "NYSE";
-  var al  = alertas.find(function(a){ return a.ticker === tk && a.mercado; });
-  if(al)  return al.mercado;
-  var v   = resumenOps.find(function(x){ return x.ticker === tk; });
-  if(v)   return v.tipo === "ACCIONES" ? "AR" : "NYSE";
+  var pos=posiciones.find(function(p){ return p.ticker===tk; });
+  if(pos) return pos.tipo==="AR"?"AR":pos.tipo==="BONO"?"BONO":"NYSE";
+  var al=alertas.find(function(a){ return a.ticker===tk&&a.mercado; });
+  if(al) return al.mercado;
+  var v=resumenOps.find(function(x){ return x.ticker===tk; });
+  if(v) return v.tipo==="ACCIONES"?"AR":"NYSE";
   return "NYSE";
 }
+
 function fetchPrecioUnico(tk, mercado){
-  if(mercado === "AR")   return getARData().then(function(a){ return fetchARfromData(tk, a); });
-  if(mercado === "BONO") return fetchBono(tk);
+  if(mercado==="AR") return fetchARData().then(function(arr){ return extraerPrecioAR(tk,arr); });
+  if(mercado==="BONO") return fetchBono(tk);
   return fetchFinnhub(tk);
 }
+
+// ══ fetchPrecios ══
 function fetchPrecios(){
-  var tkPos = posiciones.filter(function(p){ return p.tipo !== "LIQUIDO"; }).map(function(p){ return p.ticker; });
-  var tkAl  = alertas.filter(function(a){ return a.activa && !a.disparada; }).map(function(a){ return a.ticker; });
-  var tks   = tkPos.concat(tkAl).filter(function(v,i,a){ return a.indexOf(v) === i; });
-  var arTks = tks.filter(function(tk){ return getMercadoTicker(tk) === "AR"; });
-  var prAR  = arTks.length > 0 ? getARData() : Promise.resolve([]);
-  return prAR.then(function(arData){
-    return Promise.all(tks.map(function(tk){
-      var m    = getMercadoTicker(tk);
-      var prom = m === "AR" ? fetchARfromData(tk,arData) : m === "BONO" ? fetchBono(tk) : fetchFinnhub(tk);
-      return prom.then(function(r){
-        var pos = posiciones.find(function(p){ return p.ticker === tk; });
-        if(r) precios[tk] = r;
-        else if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
-      });
-    }));
-  }).then(function(){ checkAlertas(); });
+  var tkPos = posiciones.filter(function(p){ return p.tipo!=="LIQUIDO"; }).map(function(p){ return p.ticker; });
+  var tkAl  = alertas.filter(function(a){ return a.activa&&!a.disparada; }).map(function(a){ return a.ticker; });
+  var tks   = tkPos.concat(tkAl).filter(function(v,i,a){ return a.indexOf(v)===i; });
+
+  var arTks  = tks.filter(function(tk){ return getMercadoTicker(tk)==="AR"; });
+  var restTks= tks.filter(function(tk){ return getMercadoTicker(tk)!=="AR"; });
+
+  // Fetch AR fresco
+  var prAR = arTks.length > 0
+    ? fetchARData().then(function(arData){
+        arTks.forEach(function(tk){
+          var r = extraerPrecioAR(tk, arData);
+          if(r){
+            precios[tk] = r; 
+          } else {
+            var pos = posiciones.find(function(p){ return p.ticker===tk; });
+            if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
+          }
+        });
+      })
+    : Promise.resolve();
+
+  var prRest = Promise.all(restTks.map(function(tk){
+    var m = getMercadoTicker(tk);
+    var prom = m==="BONO" ? fetchBono(tk) : fetchFinnhub(tk);
+    return prom.then(function(r){
+      var pos = posiciones.find(function(p){ return p.ticker===tk; });
+      if(r) precios[tk] = r;
+      else if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
+    });
+  }));
+
+  return Promise.all([prAR, prRest]).then(function(){ checkAlertas(); });
 }
 
-// ══ ALERTAS ══
 function pedirPermisoNotificaciones(){
   if(!("Notification" in window)) return;
-  if(Notification.permission === "default") Notification.requestPermission();
+  if(Notification.permission==="default") Notification.requestPermission();
 }
-function notificarAlerta(a, pr){
-  var msg = "🔔 "+a.tipo+" "+a.ticker+": precio "+fU(pr)+" (objetivo "+fU(a.precio)+")";
-  if(Notification.permission === "granted"){
+function notificarAlerta(a,pr){
+  var msg="🔔 "+a.tipo+" "+a.ticker+": precio "+fU(pr)+" (objetivo "+fU(a.precio)+")";
+  if(Notification.permission==="granted"){
     try{ new Notification("🔔 Alerta "+a.tipo+": "+a.ticker,{body:msg,requireInteraction:true}); } catch(e){}
   }
-  setTimeout(function(){ alert("⚡ ALERTA DISPARADA\n\n"+msg+(a.nota?"\nNota: "+a.nota:"")); }, 100);
-  syncBar("🔔 "+msg, "#e65100");
+  setTimeout(function(){ alert("⚡ ALERTA DISPARADA\n\n"+msg+(a.nota?"\nNota: "+a.nota:"")); },100);
+  syncBar("🔔 "+msg,"#e65100");
 }
 function checkAlertas(){
-  if(!alertas || alertas.length === 0) return;
-  var cambio = false;
+  if(!alertas||alertas.length===0) return;
+  var cambio=false;
   alertas.forEach(function(a){
-    if(!a.activa || a.disparada) return;
-    var obj = precios[a.ticker];
-    if(!obj || !obj.precio || isNaN(obj.precio) || obj.precio <= 0) return;
-    var pr = obj.precio;
-    if((a.tipo === "COMPRA" && pr <= a.precio) || (a.tipo === "VENTA" && pr >= a.precio)){
-      a.disparada = true; a.activa = false;
-      a.fechaDisparada  = new Date().toLocaleString("es-AR");
-      a.precioDisparado = pr;
-      cambio = true;
-      notificarAlerta(a, pr);
+    if(!a.activa||a.disparada) return;
+    var obj=precios[a.ticker];
+    if(!obj||!obj.precio||isNaN(obj.precio)||obj.precio<=0) return;
+    var pr=obj.precio;
+    if((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio)){
+      a.disparada=true; a.activa=false;
+      a.fechaDisparada=new Date().toLocaleString("es-AR");
+      a.precioDisparado=pr;
+      cambio=true;
+      notificarAlerta(a,pr);
     }
   });
   if(cambio){ save(); renderAlertas(); }
 }
 function refrescarPreciosAlertas(){
-  syncBar("🔄 Actualizando precios de alertas...","#1565c0");
-  var tkAl = alertas.filter(function(a){ return a.activa && !a.disparada; }).map(function(a){ return a.ticker; });
-  tkAl     = tkAl.filter(function(v,i,a){ return a.indexOf(v) === i; });
-  if(tkAl.length === 0){ syncBar("Sin alertas activas","#888"); return; }
-  var arTks = tkAl.filter(function(tk){ return getMercadoTicker(tk) === "AR"; });
-  var prAR  = arTks.length > 0 ? getARData() : Promise.resolve([]);
+  syncBar("🔄 Actualizando...","#1565c0");
+  var tkAl=alertas.filter(function(a){ return a.activa&&!a.disparada; }).map(function(a){ return a.ticker; });
+  tkAl=tkAl.filter(function(v,i,a){ return a.indexOf(v)===i; });
+  if(tkAl.length===0){ syncBar("Sin alertas activas","#888"); return; }
+  var arTks=tkAl.filter(function(tk){ return getMercadoTicker(tk)==="AR"; });
+  var prAR=arTks.length>0?fetchARData():Promise.resolve([]);
   prAR.then(function(arData){
     return Promise.all(tkAl.map(function(tk){
-      var m = getMercadoTicker(tk);
-      return (m==="AR"?fetchARfromData(tk,arData):m==="BONO"?fetchBono(tk):fetchFinnhub(tk))
-             .then(function(r){ if(r) precios[tk] = r; });
+      var m=getMercadoTicker(tk);
+      var p=m==="AR"?Promise.resolve(extraerPrecioAR(tk,arData)):m==="BONO"?fetchBono(tk):fetchFinnhub(tk);
+      return p.then(function(r){ if(r) precios[tk]=r; });
     }));
   }).then(function(){ syncBar("✅ Precios actualizados","#1e7e34"); checkAlertas(); renderAlertas(); });
 }
 function renderAlertas(){
-  var compras = alertas.filter(function(a){ return a.tipo === "COMPRA"; });
-  var ventas  = alertas.filter(function(a){ return a.tipo === "VENTA";  });
+  var compras=alertas.filter(function(a){ return a.tipo==="COMPRA"; });
+  var ventas =alertas.filter(function(a){ return a.tipo==="VENTA";  });
   function aCard(a){
-    var idx       = alertas.indexOf(a);
-    var obj       = precios[a.ticker];
-    var pr        = obj && obj.precio && !isNaN(obj.precio) && obj.precio > 0 ? obj.precio : null;
-    var triggered = pr !== null && a.activa && ((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
-    var status    = !a.activa ? "inactive" : triggered ? "triggered" : "active";
-    var statusLbl = {inactive:"Pausada",triggered:"¡Disparada!",active:"Activa"}[status];
-    var mBadge    = a.mercado ? '<span class="alert-badge">'+a.mercado+'</span>' : "";
-    var precioBloque = "";
-    if(pr !== null){
-      var distPct = (pr - a.precio) / a.precio * 100;
-      var falta   = Math.abs(pr - a.precio);
-      var cerca   = Math.abs(distPct) < 5;
-      var msg = a.tipo === "COMPRA"
-        ? (pr <= a.precio ? "✅ ¡DISPARADA!" : "📉 Falta bajar "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)")
-        : (pr >= a.precio ? "✅ ¡DISPARADA!" : "📈 Falta subir " +fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
-      precioBloque = '<div class="alert-prices">'+
-        '<span class="alert-actual">Actual: '+fU(pr)+'</span>'+
-        '<span class="alert-objetivo">→ Obj: '+fU(a.precio)+'</span>'+
-        '<span class="alert-distancia'+(triggered?" ok":cerca?" cerca":"")+'">'+msg+'</span>'+
-      '</div>';
+    var idx=alertas.indexOf(a);
+    var obj=precios[a.ticker];
+    var pr=obj&&obj.precio&&!isNaN(obj.precio)&&obj.precio>0?obj.precio:null;
+    var triggered=pr!==null&&a.activa&&((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
+    var status=!a.activa?"inactive":triggered?"triggered":"active";
+    var statusLbl={inactive:"Pausada",triggered:"¡Disparada!",active:"Activa"}[status];
+    var mBadge=a.mercado?'<span class="alert-badge">'+a.mercado+'</span>':"";
+    var precioBloque="";
+    if(pr!==null){
+      var distPct=(pr-a.precio)/a.precio*100;
+      var falta=Math.abs(pr-a.precio);
+      var cerca=Math.abs(distPct)<5;
+      var msg=a.tipo==="COMPRA"
+        ?(pr<=a.precio?"✅ ¡DISPARADA!":"📉 Falta bajar "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)")
+        :(pr>=a.precio?"✅ ¡DISPARADA!":"📈 Falta subir " +fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
+      precioBloque='<div class="alert-prices"><span class="alert-actual">Actual: '+fU(pr)+'</span><span class="alert-objetivo">→ Obj: '+fU(a.precio)+'</span><span class="alert-distancia'+(triggered?" ok":cerca?" cerca":"")+'">'+msg+'</span></div>';
     } else {
-      precioBloque = '<div style="font-size:10px;color:#e65100;margin-bottom:5px">⚠️ Sin precio — tocá ↻ Actualizar</div>';
+      precioBloque='<div style="font-size:10px;color:#e65100;margin-bottom:5px">⚠️ Sin precio — tocá ↻ Actualizar</div>';
     }
     return '<div class="alert-card'+(triggered?" triggered":!a.activa?" inactive":"")+'">'+
-      '<div class="alert-header">'+
-        '<div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+' '+(a.activa?"":"off")+'"></div>'+
-        '<span class="alert-ticker">'+a.ticker+'</span>'+mBadge+
-        '<span class="alert-status '+status+'">'+statusLbl+'</span>'+
-      '</div>'+
-      precioBloque+
-      (a.nota?'<div style="font-size:10px;color:#888;margin-bottom:5px">📝 '+a.nota+'</div>':"")+
+      '<div class="alert-header"><div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+' '+(a.activa?"":"off")+'"></div>'+
+      '<span class="alert-ticker">'+a.ticker+'</span>'+mBadge+
+      '<span class="alert-status '+status+'">'+statusLbl+'</span></div>'+
+      precioBloque+(a.nota?'<div style="font-size:10px;color:#888;margin-bottom:5px">📝 '+a.nota+'</div>':"")+
       '<div class="alert-actions">'+
         '<button class="del-btn" onclick="toggleAlerta('+idx+')">'+(a.activa?"⏸ Pausar":"▶ Activar")+'</button>'+
         '<button class="del-btn" onclick="elimAlerta('+idx+')" style="color:#b71c1c;border-color:#b71c1c">🗑 Eliminar</button>'+
       '</div></div>';
   }
-  function fill(arr, max){
-    var h = arr.map(aCard).join("");
-    for(var i = arr.length; i < max; i++)
-      h += '<div style="padding:8px 10px;font-size:11px;color:#ccc;border:.5px dashed #e8e8e8;border-radius:8px;margin-bottom:6px;text-align:center">Alerta '+(i+1)+' disponible</div>';
+  function fill(arr,max){
+    var h=arr.map(aCard).join("");
+    for(var i=arr.length;i<max;i++) h+='<div style="padding:8px 10px;font-size:11px;color:#ccc;border:.5px dashed #e8e8e8;border-radius:8px;margin-bottom:6px;text-align:center">Alerta '+(i+1)+' disponible</div>';
     return h;
   }
-  document.getElementById("alertas-compra").innerHTML = fill(compras, 15);
-  document.getElementById("alertas-venta").innerHTML  = fill(ventas,  15);
-  var disp = alertas.filter(function(a){
-    var obj = precios[a.ticker]; var pr = obj ? obj.precio : null;
-    return pr && a.activa && ((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
+  document.getElementById("alertas-compra").innerHTML=fill(compras,15);
+  document.getElementById("alertas-venta").innerHTML =fill(ventas,15);
+  var disp=alertas.filter(function(a){
+    var obj=precios[a.ticker]; var pr=obj?obj.precio:null;
+    return pr&&a.activa&&((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
   });
-  document.getElementById("alertas-triggered").innerHTML = disp.length
-    ? '<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;border:.5px solid #ffcc02;font-size:12px;margin-bottom:4px">🔔 <strong>'+disp.length+' alerta(s):</strong> '+disp.map(function(a){ return a.ticker+" "+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio); }).join(" · ")+'</div>'
-    : "";
-  var hist = alertas.filter(function(a){ return a.disparada; });
-  document.getElementById("alertas-hist").innerHTML = hist.length
-    ? hist.map(function(a){
+  document.getElementById("alertas-triggered").innerHTML=disp.length
+    ?'<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;border:.5px solid #ffcc02;font-size:12px;margin-bottom:4px">🔔 <strong>'+disp.length+' alerta(s):</strong> '+disp.map(function(a){ return a.ticker+" "+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio); }).join(" · ")+'</div>':"";
+  var hist=alertas.filter(function(a){ return a.disparada; });
+  document.getElementById("alertas-hist").innerHTML=hist.length
+    ?hist.map(function(a){
         return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f5f5f5">'+
           '<div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+'"></div>'+
           '<span style="font-weight:700;font-size:12px;min-width:50px">'+a.ticker+'</span>'+
           '<span style="font-size:12px;flex:1">'+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio)+
             (a.precioDisparado?' <span style="color:#1e7e34;font-weight:700">(en '+fU(a.precioDisparado)+')</span>':"")+
-          '</span>'+
-          '<span style="font-size:10px;color:#888">'+(a.fechaDisparada||"")+'</span>'+
-          '<button class="del-btn" onclick="reactivarAlerta('+alertas.indexOf(a)+')">↺</button>'+
-        '</div>';
+          '</span><span style="font-size:10px;color:#888">'+(a.fechaDisparada||"")+'</span>'+
+          '<button class="del-btn" onclick="reactivarAlerta('+alertas.indexOf(a)+')">↺</button></div>';
       }).join("")
-    : '<div class="empty-state">Ninguna disparada aún</div>';
+    :'<div class="empty-state">Ninguna disparada aún</div>';
 }
 function showAlertaForm(tipo){
-  document.getElementById("alerta-form").style.display = "block";
-  document.getElementById("al-tipo").value = tipo;
-  document.getElementById("alerta-form-title").textContent = "Nueva alerta de "+(tipo==="COMPRA"?"🟢 COMPRA":"🔴 VENTA");
+  document.getElementById("alerta-form").style.display="block";
+  document.getElementById("al-tipo").value=tipo;
+  document.getElementById("alerta-form-title").textContent="Nueva alerta de "+(tipo==="COMPRA"?"🟢 COMPRA":"🔴 VENTA");
   onChangeMercadoAlerta();
 }
 function onChangeMercadoAlerta(){
-  var m = document.getElementById("al-mercado").value;
-  var hints = {NYSE:"Finnhub — precio USD. Ej: KO, CAT, EWZ, VIST", AR:"data912/BYMA — ARS÷MEP. Ej: GGAL, YPFD", BONO:"data912 — USD. Ej: AL35, GD35, AE38"};
-  document.getElementById("al-mercado-hint").textContent = hints[m] || "";
-  document.getElementById("al-precio-label").textContent = m === "AR" ? "Precio objetivo USD (≈ARS÷MEP)" : "Precio objetivo USD";
+  var m=document.getElementById("al-mercado").value;
+  var hints={NYSE:"Finnhub — precio USD",AR:"data912/BYMA — ARS÷MEP",BONO:"data912 — USD"};
+  document.getElementById("al-mercado-hint").textContent=hints[m]||"";
+  document.getElementById("al-precio-label").textContent=m==="AR"?"Precio objetivo USD (≈ARS÷MEP)":"Precio objetivo USD";
 }
 function guardarAlerta(){
-  var ticker  = document.getElementById("al-ticker").value.trim().toUpperCase();
-  var precio  = parseFloat(document.getElementById("al-precio").value);
-  var tipo    = document.getElementById("al-tipo").value;
-  var mercado = document.getElementById("al-mercado").value;
-  var nota    = document.getElementById("al-nota").value.trim();
-  if(!ticker || isNaN(precio) || precio <= 0){ alert("Completá ticker y precio."); return; }
-  if(alertas.filter(function(a){ return a.tipo === tipo; }).length >= 15){ alert("Máximo 15 alertas por tipo."); return; }
-  alertas.push({ticker:ticker, precio:precio, tipo:tipo, mercado:mercado, nota:nota, activa:true, creada:hoy(), disparada:false, fechaDisparada:null, precioDisparado:null});
+  var ticker=document.getElementById("al-ticker").value.trim().toUpperCase();
+  var precio=parseFloat(document.getElementById("al-precio").value);
+  var tipo=document.getElementById("al-tipo").value;
+  var mercado=document.getElementById("al-mercado").value;
+  var nota=document.getElementById("al-nota").value.trim();
+  if(!ticker||isNaN(precio)||precio<=0){ alert("Completá ticker y precio."); return; }
+  if(alertas.filter(function(a){ return a.tipo===tipo; }).length>=15){ alert("Máximo 15 alertas por tipo."); return; }
+  alertas.push({ticker:ticker,precio:precio,tipo:tipo,mercado:mercado,nota:nota,activa:true,creada:hoy(),disparada:false,fechaDisparada:null,precioDisparado:null});
   save();
-  document.getElementById("alerta-form").style.display = "none";
-  ["al-ticker","al-precio","al-nota"].forEach(function(id){ document.getElementById(id).value = ""; });
+  document.getElementById("alerta-form").style.display="none";
+  ["al-ticker","al-precio","al-nota"].forEach(function(id){ document.getElementById(id).value=""; });
   pedirPermisoNotificaciones();
-  fetchPrecioUnico(ticker, mercado).then(function(r){ if(r) precios[ticker] = r; renderAlertas(); });
+  fetchPrecioUnico(ticker,mercado).then(function(r){ if(r) precios[ticker]=r; renderAlertas(); });
 }
-function toggleAlerta(i){ alertas[i].activa = !alertas[i].activa; if(alertas[i].activa) alertas[i].disparada = false; save(); renderAlertas(); }
+function toggleAlerta(i){ alertas[i].activa=!alertas[i].activa; if(alertas[i].activa) alertas[i].disparada=false; save(); renderAlertas(); }
 function elimAlerta(i){ if(!confirm("¿Eliminar alerta?")) return; alertas.splice(i,1); save(); renderAlertas(); }
 function reactivarAlerta(i){ alertas[i].disparada=false; alertas[i].activa=true; alertas[i].fechaDisparada=null; alertas[i].precioDisparado=null; save(); renderAlertas(); }
 
-// ══ UTILS ══
-function fmt(n,d){ d = d===undefined?0:d; return Number(n).toLocaleString("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fmt(n,d){ d=d===undefined?0:d; return Number(n).toLocaleString("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d}); }
 function fU(n){ return "USD "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fARS(n){ return "$"+Number(n).toLocaleString("es-AR",{minimumFractionDigits:0,maximumFractionDigits:0}); }
 function pct(n){ return (n>=0?"+":"")+Number(n).toFixed(2)+"%"; }
 function clr(n){ return n>=0?"pos":"neg"; }
 function hoy(){ return new Date().toISOString().split("T")[0]; }
 function mc(label,val,sub,cls){ return '<div class="mc"><div class="mc-label">'+label+'</div><div class="mc-val '+(cls||"neu")+'">'+val+'</div>'+(sub?'<div class="mc-sub">'+sub+'</div>':'')+'</div>'; }
+
 function getPosData(){
-  return posiciones.filter(function(p){ return p.tipo !== "LIQUIDO"; }).map(function(pos){
-    var pr = precios[pos.ticker] || {precio:pos.ppc, varHoy:0, precioARS:null};
-    var gpPct = pos.ppc > 0 ? ((pr.precio - pos.ppc) / pos.ppc) * 100 : 0;
-    return Object.assign({}, pos, {precioUSD:pr.precio, varHoy:pr.varHoy, precioARS:pr.precioARS, gpPct:gpPct, gpUSD:(pr.precio-pos.ppc)*pos.cantidad, total:pr.precio*pos.cantidad});
+  return posiciones.filter(function(p){ return p.tipo!=="LIQUIDO"; }).map(function(pos){
+    var pr = precios[pos.ticker];
+    if(!pr || !pr.precio){ pr = {precio:pos.ppc, varHoy:0, precioARS:null}; }
+    var gpPct = pos.ppc>0 ? ((pr.precio-pos.ppc)/pos.ppc)*100 : 0;
+    return Object.assign({},pos,{
+      precioUSD : pr.precio,
+      varHoy    : typeof pr.varHoy==="number" ? pr.varHoy : 0,
+      precioARS : pr.precioARS||null,
+      gpPct     : gpPct,
+      gpUSD     : (pr.precio-pos.ppc)*pos.cantidad,
+      total     : pr.precio*pos.cantidad
+    });
   });
 }
 function getLiq(){
-  return posiciones.filter(function(p){ return p.tipo === "LIQUIDO"; }).map(function(p){ return Object.assign({},p,{total:p.ppc*p.cantidad, gpPct:0, gpUSD:0}); });
+  return posiciones.filter(function(p){ return p.tipo==="LIQUIDO"; }).map(function(p){ return Object.assign({},p,{total:p.ppc*p.cantidad,gpPct:0,gpUSD:0}); });
 }
 
-// ══ SECTOR VIEW ══
 function renderSectorView(){
-  var sector = document.getElementById("dash-sector").value;
-  var view   = document.getElementById("sector-view");
-  var empty  = document.getElementById("sector-empty");
+  var sector=document.getElementById("dash-sector").value;
+  var view=document.getElementById("sector-view");
+  var empty=document.getElementById("sector-empty");
   if(!sector){ view.style.display="none"; empty.style.display="block"; return; }
-  view.style.display = "block"; empty.style.display = "none";
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
-  var items = sector === "LIQUIDO" ? liq : dat.filter(function(d){ return d.sector === sector; });
-  var totalSector    = items.reduce(function(s,d){return s+d.total;},0);
-  var capitalInvert = items.reduce(function(s,d){return s+(d.ppc||0)*(d.cantidad||0);},0);
-  var gpSector      = items.reduce(function(s,d){return s+(d.gpUSD||0);},0);
-  var gpPctSector   = capitalInvert > 0 ? gpSector/capitalInvert*100 : 0;
-  var pondCartera   = grand > 0 ? totalSector/grand*100 : 0;
-  document.getElementById("sector-metrics").innerHTML =
-    mc("Sector", sector, items.length+" posiciones","neu")+
-    mc("Total USD", fU(totalSector), fmt(pondCartera,1)+"% de cartera","neu")+
-    mc("Capital invertido", fU(capitalInvert),"","neu")+
+  view.style.display="block"; empty.style.display="none";
+  var dat=getPosData(), liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
+  var items=sector==="LIQUIDO"?liq:dat.filter(function(d){ return d.sector===sector; });
+  var totalSector=items.reduce(function(s,d){return s+d.total;},0);
+  var capitalInvert=items.reduce(function(s,d){return s+(d.ppc||0)*(d.cantidad||0);},0);
+  var gpSector=items.reduce(function(s,d){return s+(d.gpUSD||0);},0);
+  var gpPctSector=capitalInvert>0?gpSector/capitalInvert*100:0;
+  var pondCartera=grand>0?totalSector/grand*100:0;
+  document.getElementById("sector-metrics").innerHTML=
+    mc("Sector",sector,items.length+" posiciones","neu")+
+    mc("Total USD",fU(totalSector),fmt(pondCartera,1)+"% de cartera","neu")+
+    mc("Capital invertido",fU(capitalInvert),"","neu")+
     mc("G/P no realizada",(gpSector>=0?"+":"")+fU(gpSector),pct(gpPctSector),clr(gpSector));
-  var sorted = items.slice().sort(function(a,b){ return b.total - a.total; });
-  document.getElementById("tb-sector").innerHTML = sorted.length ? sorted.map(function(d){
-    var pondS = totalSector > 0 ? d.total/totalSector*100 : 0;
-    var pondC = grand > 0       ? d.total/grand*100        : 0;
-    var gpP   = d.gpPct  != null && sector !== "LIQUIDO" ? pct(d.gpPct)                    : "-";
-    var gpU   = d.gpUSD  != null && sector !== "LIQUIDO" ? (d.gpUSD>=0?"+":"")+fU(d.gpUSD) : "-";
-    var gcls  = d.gpUSD  != null && sector !== "LIQUIDO" ? clr(d.gpUSD)                    : "";
-    var tipo  = d.tipo === "CEDEAR" ? "b-nyse" : d.tipo === "AR" ? "b-ar" : d.tipo === "BONO" ? "b-bono" : "b-liq";
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span></td>'+
-      '<td style="font-size:11px;color:#555">'+d.nombre+'</td>'+
+  var sorted=items.slice().sort(function(a,b){ return b.total-a.total; });
+  document.getElementById("tb-sector").innerHTML=sorted.length?sorted.map(function(d){
+    var pondS=totalSector>0?d.total/totalSector*100:0;
+    var pondC=grand>0?d.total/grand*100:0;
+    var gpP=d.gpPct!=null&&sector!=="LIQUIDO"?pct(d.gpPct):"-";
+    var gpU=d.gpUSD!=null&&sector!=="LIQUIDO"?(d.gpUSD>=0?"+":"")+fU(d.gpUSD):"-";
+    var gcls=d.gpUSD!=null&&sector!=="LIQUIDO"?clr(d.gpUSD):"";
+    var tipo=d.tipo==="CEDEAR"?"b-nyse":d.tipo==="AR"?"b-ar":d.tipo==="BONO"?"b-bono":"b-liq";
+    return '<tr><td><span class="tkr">'+d.ticker+'</span></td><td style="font-size:11px;color:#555">'+d.nombre+'</td>'+
       '<td><span class="badge '+tipo+'">'+d.tipo+'</span></td>'+
-      '<td>'+fmt(d.cantidad, d.cantidad%1===0?0:2)+'</td>'+
-      '<td>'+fU(d.ppc)+'</td>'+
+      '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td><td>'+fU(d.ppc)+'</td>'+
       '<td><strong>'+fU(d.precioUSD||d.ppc)+'</strong></td>'+
-      '<td class="'+(gcls||"neu")+'">'+gpP+'</td>'+
-      '<td class="'+(gcls||"neu")+'">'+gpU+'</td>'+
+      '<td class="'+(gcls||"neu")+'">'+gpP+'</td><td class="'+(gcls||"neu")+'">'+gpU+'</td>'+
       '<td>'+fU(d.total)+'</td>'+
-      '<td><div style="display:flex;align-items:center;gap:6px">'+
-        '<div style="background:#f0f0f0;border-radius:3px;height:6px;width:60px;overflow:hidden">'+
-          '<div style="width:'+Math.min(pondS,100)+'%;height:6px;background:#1a1a2e;border-radius:3px"></div></div>'+
-        '<span style="font-size:11px;font-weight:600">'+fmt(pondS,1)+'%</span></div></td>'+
+      '<td><div style="display:flex;align-items:center;gap:6px"><div style="background:#f0f0f0;border-radius:3px;height:6px;width:60px;overflow:hidden"><div style="width:'+Math.min(pondS,100)+'%;height:6px;background:#1a1a2e;border-radius:3px"></div></div>'+
+      '<span style="font-size:11px;font-weight:600">'+fmt(pondS,1)+'%</span></div></td>'+
       '<td style="font-size:11px;color:#888">'+fmt(pondC,1)+'%</td></tr>';
-  }).join("") : '<tr><td colspan="11" class="empty-state">Sin posiciones en '+sector+'</td></tr>';
+  }).join(""):'<tr><td colspan="11" class="empty-state">Sin posiciones en '+sector+'</td></tr>';
 }
 
-// ══ DASHBOARD ══
 function renderDashboard(){
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var liqT  = liq.reduce(function(s,l){return s+l.total;},0);
-  var posT  = dat.reduce(function(s,d){return s+d.total;},0);
-  var posC  = dat.reduce(function(s,d){return s+d.ppc*d.cantidad;},0);
-  var grand = posT + liqT;
-  var pnl   = posT - posC, pnlPct = posC > 0 ? pnl/posC*100 : 0;
-  var srt   = dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
-  var best  = srt[0]             || {ticker:"-",gpPct:0,gpUSD:0};
-  var worst = srt[srt.length-1] || {ticker:"-",gpPct:0,gpUSD:0};
-  var realizado = resumenOps.reduce(function(s,o){return s+(o.gp||0);},0);
-  var nC = BASE_COMPRAS + extraPos.reduce(function(s,e){return s+(e._compras||0);},0);
-  var nV = BASE_VENTAS  + extraVentas.length;
-  document.getElementById("dash-metrics").innerHTML =
+  var dat=getPosData(), liq=getLiq();
+  var liqT=liq.reduce(function(s,l){return s+l.total;},0);
+  var posT=dat.reduce(function(s,d){return s+d.total;},0);
+  var posC=dat.reduce(function(s,d){return s+d.ppc*d.cantidad;},0);
+  var grand=posT+liqT;
+  var pnl=posT-posC, pnlPct=posC>0?pnl/posC*100:0;
+  var srt=dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
+  var best=srt[0]||{ticker:"-",gpPct:0,gpUSD:0};
+  var worst=srt[srt.length-1]||{ticker:"-",gpPct:0,gpUSD:0};
+  var realizado=resumenOps.reduce(function(s,o){return s+(o.gp||0);},0);
+  var nC=BASE_COMPRAS+extraPos.reduce(function(s,e){return s+(e._compras||0);},0);
+  var nV=BASE_VENTAS+extraVentas.length;
+  document.getElementById("dash-metrics").innerHTML=
     mc("Cartera total",fU(grand),fU(posT)+" en activos","neu")+
     mc("G/P no realizada",(pnl>=0?"+":"")+fU(pnl),pct(pnlPct),clr(pnl))+
     mc("Mejor posición",pct(best.gpPct),best.ticker,"pos")+
@@ -1067,117 +1045,96 @@ function renderDashboard(){
     mc("CCL / MEP","$"+fmt(cotiz.ccl),"MEP $"+fmt(cotiz.mep),"neu")+
     mc("Operaciones","🟢 "+nC+" compras","🔴 "+nV+" ventas","neu");
   if(document.getElementById("dash-sector").value) renderSectorView();
-  // Barras composición
   var tipos=["CEDEAR","AR","BONO","LIQUIDO"],tiL=["CEDEARs","Acc.AR","Bonos","Líquido"],tiC=["#e65100","#1565c0","#2e7d32","#546e7a"];
-  var tiT = tipos.map(function(t){ return t==="LIQUIDO"?liqT:dat.filter(function(d){return d.tipo===t;}).reduce(function(s,d){return s+d.total;},0); });
-  document.getElementById("bar-comp").innerHTML = tipos.map(function(t,i){
-    var p = grand > 0 ? tiT[i]/grand*100 : 0;
-    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
-      '<span style="font-weight:600">'+tiL[i]+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(tiT[i])+'</span></div>'+
+  var tiT=tipos.map(function(t){ return t==="LIQUIDO"?liqT:dat.filter(function(d){return d.tipo===t;}).reduce(function(s,d){return s+d.total;},0); });
+  document.getElementById("bar-comp").innerHTML=tipos.map(function(t,i){
+    var p=grand>0?tiT[i]/grand*100:0;
+    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="font-weight:600">'+tiL[i]+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(tiT[i])+'</span></div>'+
       '<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden"><div style="width:'+Math.min(p,100)+'%;height:10px;border-radius:4px;background:'+tiC[i]+'"></div></div></div>';
   }).join("");
-  // Barras sector
-  var secs = dat.map(function(d){return d.sector;}).filter(function(v,i,a){return a.indexOf(v)===i;});
-  var secC = ["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e"];
-  var secSort = secs.map(function(s,i){return{s:s,t:dat.filter(function(d){return d.sector===s;}).reduce(function(a,d){return a+d.total;},0),c:secC[i%secC.length]};}).sort(function(a,b){return b.t-a.t;});
-  document.getElementById("bar-sec").innerHTML = secSort.map(function(item){
-    var p = posT > 0 ? item.t/posT*100 : 0;
-    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
-      '<span style="font-weight:600">'+item.s+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(item.t)+'</span></div>'+
+  var secs=dat.map(function(d){return d.sector;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+  var secC=["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e"];
+  var secSort=secs.map(function(s,i){return{s:s,t:dat.filter(function(d){return d.sector===s;}).reduce(function(a,d){return a+d.total;},0),c:secC[i%secC.length]};}).sort(function(a,b){return b.t-a.t;});
+  document.getElementById("bar-sec").innerHTML=secSort.map(function(item){
+    var p=posT>0?item.t/posT*100:0;
+    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="font-weight:600">'+item.s+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(item.t)+'</span></div>'+
       '<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden"><div style="width:'+Math.min(p,100)+'%;height:10px;border-radius:4px;background:'+item.c+'"></div></div></div>';
   }).join("");
-  // % por instrumento
-  var all  = dat.concat(liq).sort(function(a,b){return b.total-a.total;});
-  var cols = ["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e","#1565c0","#6a1b9a","#2e7d32","#bf360c","#880e4f","#00695c"];
-  document.getElementById("pct-grid").innerHTML = all.map(function(d,i){
-    var p = grand > 0 ? d.total/grand*100 : 0;
+  var all=dat.concat(liq).sort(function(a,b){return b.total-a.total;});
+  var cols=["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e","#1565c0","#6a1b9a","#2e7d32","#bf360c","#880e4f","#00695c"];
+  document.getElementById("pct-grid").innerHTML=all.map(function(d,i){
+    var p=grand>0?d.total/grand*100:0;
     return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #f5f5f5">'+
       '<span style="font-weight:700;font-size:12px;min-width:52px">'+d.ticker+'</span>'+
       '<div class="perf-bar-wrap"><div class="perf-bar" style="width:'+Math.min(p*4,100)+'%;background:'+cols[i%cols.length]+'"></div></div>'+
       '<span style="font-size:12px;font-weight:600;min-width:36px;text-align:right">'+fmt(p,1)+'%</span>'+
       '<span style="font-size:11px;color:#888;min-width:88px;text-align:right">'+fU(d.total)+'</span></div>';
   }).join("");
-  document.getElementById("w-best").textContent   = best.ticker;
-  document.getElementById("w-best-p").textContent  = pct(best.gpPct)+" · "+fU(best.gpUSD);
-  document.getElementById("w-worst").textContent   = worst.ticker;
-  document.getElementById("w-worst-p").textContent = pct(worst.gpPct)+" · "+fU(worst.gpUSD);
-  document.getElementById("w-liq").textContent     = fU(liqT);
-  document.getElementById("w-liq-pct").textContent = fmt(grand>0?liqT/grand*100:0,1)+"% del total";
-  var wr = document.getElementById("w-real"); wr.className = clr(realizado); wr.style.cssText = "font-size:15px;font-weight:700";
-  wr.textContent = (realizado>=0?"+":"")+fU(realizado);
-  var sp = dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
+  document.getElementById("w-best").textContent=best.ticker;
+  document.getElementById("w-best-p").textContent=pct(best.gpPct)+" · "+fU(best.gpUSD);
+  document.getElementById("w-worst").textContent=worst.ticker;
+  document.getElementById("w-worst-p").textContent=pct(worst.gpPct)+" · "+fU(worst.gpUSD);
+  document.getElementById("w-liq").textContent=fU(liqT);
+  document.getElementById("w-liq-pct").textContent=fmt(grand>0?liqT/grand*100:0,1)+"% del total";
+  var wr=document.getElementById("w-real"); wr.className=clr(realizado); wr.style.cssText="font-size:15px;font-weight:700";
+  wr.textContent=(realizado>=0?"+":"")+fU(realizado);
+  var sp=dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
   if(chartPerf) chartPerf.destroy();
-  chartPerf = new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
-  var tI = flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
-  var tE = flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
+  chartPerf=new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%;"}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  var tI=flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
+  var tE=flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
   var neto=tI-tE, rend=grand-neto, rendPct=neto>0?rend/neto*100:0;
-  document.getElementById("rend-real").innerHTML =
+  document.getElementById("rend-real").innerHTML=
     mc("Ingresado","+"+fU(tI),"","pos")+mc("Retirado","-"+fU(tE),"","neg")+
     mc("Capital neto",fU(neto),"","neu")+mc("Cartera hoy",fU(grand),"","neu")+
     mc("Rendimiento real",(rend>=0?"+":"")+fU(rend),pct(rendPct),clr(rend))+
     mc("G/P realizada",(realizado>=0?"+":"")+fU(realizado),"",clr(realizado));
   if(chartRend) chartRend.destroy();
-  chartRend = new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  chartRend=new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
 }
 
-// ══ CARTERA ══
-function mkSectorSel(ticker, sectorActual){
+function mkSectorSel(ticker,sectorActual){
   return '<select class="sec-sel" onchange="cambiarSector(\''+ticker+'\',this.value)">'+
-    SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===sectorActual?' selected':'')+'>'+s+'</option>'; }).join("")+
-  '</select>';
+    SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===sectorActual?' selected':'')+'>'+s+'</option>'; }).join("")+'</select>';
 }
 function mkEditBtn(ticker){ return '<button class="edit-btn" onclick="editarPosicion(\''+ticker+'\')">✏️</button>'; }
 
 function renderCartera(){
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
+  var dat=getPosData(), liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
   function rowNY(d){
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
-      '<td>'+mkSectorSel(d.ticker,d.sector)+'</td>'+
-      '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
-      '<td>'+fU(d.ppc)+'</td>'+
-      '<td><strong>'+fU(d.precioUSD)+'</strong></td>'+
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+      '<td>'+mkSectorSel(d.ticker,d.sector)+'</td><td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
+      '<td>'+fU(d.ppc)+'</td><td><strong>'+fU(d.precioUSD)+'</strong></td>'+
       '<td class="'+clr(d.varHoy)+'" style="font-size:11px">'+pct(d.varHoy)+'</td>'+
       '<td class="'+clr(d.gpPct)+'">'+pct(d.gpPct)+'</td>'+
       '<td class="'+clr(d.gpUSD)+'">'+(d.gpUSD>=0?"+":"")+fU(d.gpUSD)+'</td>'+
-      '<td>'+fU(d.total)+'</td>'+
-      '<td style="font-size:11px;color:#888">'+fmt(grand>0?d.total/grand*100:0,1)+'%</td>'+
+      '<td>'+fU(d.total)+'</td><td style="font-size:11px;color:#888">'+fmt(grand>0?d.total/grand*100:0,1)+'%</td>'+
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
   }
   function rowAR(d){
-    var ars = d.precioARS != null ? fARS(d.precioARS) : '-';
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
-      '<td>'+mkSectorSel(d.ticker,d.sector)+'</td>'+
-      '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
-      '<td>'+fU(d.ppc)+'</td>'+
-      '<td><strong>'+fU(d.precioUSD)+'</strong></td>'+
+    var ars=d.precioARS!=null?fARS(d.precioARS):'-';
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+      '<td>'+mkSectorSel(d.ticker,d.sector)+'</td><td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
+      '<td>'+fU(d.ppc)+'</td><td><strong>'+fU(d.precioUSD)+'</strong></td>'+
       '<td style="font-size:11px;color:#555">'+ars+'</td>'+
       '<td class="'+clr(d.varHoy)+'" style="font-size:11px">'+pct(d.varHoy)+'</td>'+
       '<td class="'+clr(d.gpPct)+'">'+pct(d.gpPct)+'</td>'+
       '<td class="'+clr(d.gpUSD)+'">'+(d.gpUSD>=0?"+":"")+fU(d.gpUSD)+'</td>'+
-      '<td>'+fU(d.total)+'</td>'+
-      '<td style="font-size:11px;color:#888">'+fmt(grand>0?d.total/grand*100:0,1)+'%</td>'+
+      '<td>'+fU(d.total)+'</td><td style="font-size:11px;color:#888">'+fmt(grand>0?d.total/grand*100:0,1)+'%</td>'+
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
   }
-  var fNY   = document.getElementById("filtro-nyse").value;
-  var fAR   = document.getElementById("filtro-ar").value;
-  var nyAll = dat.filter(function(d){return d.tipo==="CEDEAR";});
-  var arAll = dat.filter(function(d){return d.tipo==="AR";});
-  var ny    = fNY ? nyAll.filter(function(d){return d.sector===fNY;}) : nyAll;
-  var ar    = fAR ? arAll.filter(function(d){return d.sector===fAR;}) : arAll;
-  var bo    = dat.filter(function(d){return d.tipo==="BONO";});
-  document.getElementById("tb-nyse").innerHTML = ny.length
-    ? ny.map(rowNY).join("")
-    : '<tr><td colspan="11" class="empty-state">'+(fNY?"Sin posiciones en "+fNY:"Sin posiciones")+'</td></tr>';
-  document.getElementById("tb-ar").innerHTML = ar.length
-    ? ar.map(rowAR).join("")
-    : '<tr><td colspan="12" class="empty-state">'+(fAR?"Sin posiciones en "+fAR:"Sin posiciones")+'</td></tr>';
-  document.getElementById("tb-bono").innerHTML = bo.length ? bo.map(function(d){
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+  var fNY=document.getElementById("filtro-nyse").value;
+  var fAR=document.getElementById("filtro-ar").value;
+  var nyAll=dat.filter(function(d){return d.tipo==="CEDEAR";});
+  var arAll=dat.filter(function(d){return d.tipo==="AR";});
+  var ny=fNY?nyAll.filter(function(d){return d.sector===fNY;}):nyAll;
+  var ar=fAR?arAll.filter(function(d){return d.sector===fAR;}):arAll;
+  var bo=dat.filter(function(d){return d.tipo==="BONO";});
+  document.getElementById("tb-nyse").innerHTML=ny.length?ny.map(rowNY).join(""):'<tr><td colspan="11" class="empty-state">'+(fNY?"Sin posiciones en "+fNY:"Sin posiciones")+'</td></tr>';
+  document.getElementById("tb-ar").innerHTML=ar.length?ar.map(rowAR).join(""):'<tr><td colspan="12" class="empty-state">'+(fAR?"Sin posiciones en "+fAR:"Sin posiciones")+'</td></tr>';
+  document.getElementById("tb-bono").innerHTML=bo.length?bo.map(function(d){
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
       '<td>'+fmt(d.cantidad,2)+'</td><td>'+fU(d.ppc)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:5px"><strong>'+fU(d.precioUSD)+'</strong>'+
         '<button onclick="editarPrecioBono(\''+d.ticker+'\')" style="font-size:10px;padding:2px 5px;border:.5px solid #1565c0;color:#1565c0;background:#fff;border-radius:5px;cursor:pointer">✏️ precio</button></div></td>'+
@@ -1185,104 +1142,82 @@ function renderCartera(){
       '<td class="'+clr(d.gpUSD)+'">'+(d.gpUSD>=0?"+":"")+fU(d.gpUSD)+'</td>'+
       '<td>'+fU(d.total)+'</td>'+
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
-  }).join("") : '<tr><td colspan="8" class="empty-state">Sin bonos</td></tr>';
-  
-  // Tabla liquido adaptada
-  document.getElementById("tb-liq").innerHTML = liq.map(function(l){
-    var isMain = l.ticker === "LIQUIDO";
-    var btn = isMain 
-        ? '<button class="edit-btn" style="padding:4px 8px" onclick="ajustarLiquido()">✏️ Ajustar</button>' 
-        : '<button class="del-btn" style="color:#b71c1c;border-color:#b71c1c" onclick="eliminarFCI(\''+l.ticker+'\')">✕ Eliminar</button>';
+  }).join(""):'<tr><td colspan="8" class="empty-state">Sin bonos</td></tr>';
+  document.getElementById("tb-liq").innerHTML=liq.map(function(l){
+    var isMain=l.ticker==="LIQUIDO";
+    var btn=isMain?'<button class="edit-btn" style="padding:4px 8px" onclick="ajustarLiquido()">✏️ Ajustar</button>':'<button class="del-btn" style="color:#b71c1c;border-color:#b71c1c" onclick="eliminarFCI(\''+l.ticker+'\')">✕ Eliminar</button>';
     return '<tr><td><span class="tkr">'+l.ticker+'</span> <small style="color:#888">'+l.nombre+'</small></td><td>'+fU(l.total)+'</td><td>'+fmt(grand>0?l.total/grand*100:0,1)+'%</td><td style="text-align:right">'+btn+'</td></tr>';
   }).join("");
 }
 
-// ══ EDITAR POSICION ══
-function cambiarSector(ticker, nuevoSector){
-  upsertExtraPos(ticker, {sector: nuevoSector});
-  reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-  save();
-  // Actualizar dashboard sin re-renderizar cartera (para no resetear el select)
-  renderDashboard();
+function cambiarSector(ticker,nuevoSector){
+  upsertExtraPos(ticker,{sector:nuevoSector});
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+  save(); renderDashboard();
 }
-
 function editarPosicion(ticker){
-  var pos = posiciones.find(function(p){ return p.ticker === ticker; });
+  var pos=posiciones.find(function(p){ return p.ticker===ticker; });
   if(!pos){ alert("Posición no encontrada."); return; }
-  var overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  var secOpts  = SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===pos.sector?' selected':'')+'>'+s+'</option>'; }).join("");
-  var tipoOpts = TIPOS_ALL.map(function(t){    return '<option value="'+t+'"'+(t===pos.tipo ?' selected':'')+'>'+t+'</option>'; }).join("");
-  overlay.innerHTML =
-    '<div class="modal-box">'+
-      '<div class="modal-title">✏️ Editar posición — '+ticker+'</div>'+
-      '<div class="form-grid" style="grid-template-columns:1fr 1fr">'+
-        '<div style="grid-column:1/-1"><label>Nombre</label><input id="ep-nombre" value="'+pos.nombre.replace(/"/g,"&quot;")+'"></div>'+
-        '<div><label>Sector</label><select id="ep-sector">'+secOpts+'</select></div>'+
-        '<div><label>Tipo</label><select id="ep-tipo">'+tipoOpts+'</select></div>'+
-        '<div><label>Cantidad</label><input id="ep-cant" type="number" step="0.001" value="'+pos.cantidad+'"></div>'+
-        '<div><label>PPC USD</label><input id="ep-ppc" type="number" step="0.01" value="'+pos.ppc+'"></div>'+
-      '</div>'+
-      '<div style="background:#fff3e0;border-radius:8px;padding:8px 12px;font-size:11px;color:#e65100;margin-bottom:14px">'+
-        '⚠️ Cambiar cantidad o PPC afecta el cálculo de G/P. Solo editá si hay un error de carga.'+
-      '</div>'+
-      '<div style="display:flex;gap:8px">'+
-        '<button id="ep-ok"  class="sbtn">💾 Guardar</button>'+
-        '<button id="ep-no"  class="sbtn" style="background:#888">Cancelar</button>'+
-      '</div>'+
-    '</div>';
+  var overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  var secOpts=SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===pos.sector?' selected':'')+'>'+s+'</option>'; }).join("");
+  var tipoOpts=TIPOS_ALL.map(function(t){ return '<option value="'+t+'"'+(t===pos.tipo?' selected':'')+'>'+t+'</option>'; }).join("");
+  overlay.innerHTML='<div class="modal-box"><div class="modal-title">✏️ Editar posición — '+ticker+'</div>'+
+    '<div class="form-grid" style="grid-template-columns:1fr 1fr">'+
+    '<div style="grid-column:1/-1"><label>Nombre</label><input id="ep-nombre" value="'+pos.nombre.replace(/"/g,"&quot;")+'"></div>'+
+    '<div><label>Sector</label><select id="ep-sector">'+secOpts+'</select></div>'+
+    '<div><label>Tipo</label><select id="ep-tipo">'+tipoOpts+'</select></div>'+
+    '<div><label>Cantidad</label><input id="ep-cant" type="number" step="0.001" value="'+pos.cantidad+'"></div>'+
+    '<div><label>PPC USD</label><input id="ep-ppc" type="number" step="0.01" value="'+pos.ppc+'"></div></div>'+
+    '<div style="background:#fff3e0;border-radius:8px;padding:8px 12px;font-size:11px;color:#e65100;margin-bottom:14px">⚠️ Cambiar cantidad o PPC afecta el cálculo de G/P.</div>'+
+    '<div style="display:flex;gap:8px"><button id="ep-ok" class="sbtn">💾 Guardar</button><button id="ep-no" class="sbtn" style="background:#888">Cancelar</button></div></div>';
   document.body.appendChild(overlay);
-  document.getElementById("ep-no").onclick = function(){ document.body.removeChild(overlay); };
-  overlay.onclick = function(e){ if(e.target === overlay) document.body.removeChild(overlay); };
-  document.getElementById("ep-ok").onclick = function(){
-    var nombre = document.getElementById("ep-nombre").value.trim();
-    var sector = document.getElementById("ep-sector").value;
-    var tipo   = document.getElementById("ep-tipo").value;
-    var cant   = parseFloat(document.getElementById("ep-cant").value);
-    var ppc    = parseFloat(document.getElementById("ep-ppc").value);
-    if(!nombre || isNaN(cant) || cant <= 0 || isNaN(ppc) || ppc <= 0){ alert("Completá todos los campos."); return; }
-    upsertExtraPos(ticker, {nombre:nombre, sector:sector, tipo:tipo, cantidad:cant, ppc:ppc});
-    reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-    save();
-    document.body.removeChild(overlay);
-    renderCartera();
-    renderDashboard();
+  document.getElementById("ep-no").onclick=function(){ document.body.removeChild(overlay); };
+  overlay.onclick=function(e){ if(e.target===overlay) document.body.removeChild(overlay); };
+  document.getElementById("ep-ok").onclick=function(){
+    var nombre=document.getElementById("ep-nombre").value.trim();
+    var sector=document.getElementById("ep-sector").value;
+    var tipo=document.getElementById("ep-tipo").value;
+    var cant=parseFloat(document.getElementById("ep-cant").value);
+    var ppc=parseFloat(document.getElementById("ep-ppc").value);
+    if(!nombre||isNaN(cant)||cant<=0||isNaN(ppc)||ppc<=0){ alert("Completá todos los campos."); return; }
+    upsertExtraPos(ticker,{nombre:nombre,sector:sector,tipo:tipo,cantidad:cant,ppc:ppc});
+    reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+    save(); document.body.removeChild(overlay); renderCartera(); renderDashboard();
   };
 }
-
 function editarPrecioBono(tk){
-  var pos = posiciones.find(function(p){ return p.ticker === tk; });
-  var act = (precios[tk] && precios[tk].precio) || (pos && pos.ppc) || 0;
-  var n   = prompt("📊 "+tk+" — Precio USD actual\nActual: "+act.toFixed(2), act.toFixed(2));
-  if(n === null) return;
-  var p = parseFloat(n);
-  if(isNaN(p) || p <= 0){ alert("Precio inválido."); return; }
-  precios[tk] = {precio:p, varHoy:0, precioARS:null, manual:true};
+  var pos=posiciones.find(function(p){ return p.ticker===tk; });
+  var act=(precios[tk]&&precios[tk].precio)||(pos&&pos.ppc)||0;
+  var n=prompt("📊 "+tk+" — Precio USD actual\nActual: "+act.toFixed(2),act.toFixed(2));
+  if(n===null) return;
+  var p=parseFloat(n);
+  if(isNaN(p)||p<=0){ alert("Precio inválido."); return; }
+  precios[tk]={precio:p,varHoy:0,precioARS:null,manual:true};
   renderCartera(); renderDashboard();
 }
 
-// ══ FLUJO ══
 function renderFlujo(){
-  var tI    = flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
-  var tE    = flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
-  var neto  = tI - tE;
-  var dat   = getPosData(), liq = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
-  var rend  = grand - neto, rendPct = neto > 0 ? rend/neto*100 : 0;
-  document.getElementById("flujo-metrics").innerHTML =
+  var tI=flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
+  var tE=flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
+  var neto=tI-tE;
+  var dat=getPosData(), liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
+  var rend=grand-neto, rendPct=neto>0?rend/neto*100:0;
+  document.getElementById("flujo-metrics").innerHTML=
     mc("Total ingresado","+"+fU(tI),flujos.filter(function(f){return f.ingresoUSD>0;}).length+" mov.","pos")+
     mc("Total retirado","-"+fU(tE),"","neg")+
     mc("Capital neto",fU(neto),"","neu")+
     mc("Cartera hoy",fU(grand),"","neu")+
     mc("Rendimiento real",(rend>=0?"+":"")+fU(rend),pct(rendPct),clr(rend));
-  var byY = {};
+  var byY={};
   flujos.forEach(function(f){ var y=f.fecha.slice(0,4); if(!byY[y]) byY[y]={ing:0,egr:0}; byY[y].ing+=f.ingresoUSD||0; byY[y].egr+=Math.abs(f.egresoUSD||0); });
-  var yrs = Object.keys(byY).sort();
+  var yrs=Object.keys(byY).sort();
   if(chartFlujo) chartFlujo.destroy();
-  chartFlujo = new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
-  var srt = flujos.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
-  document.getElementById("tb-flujo").innerHTML = srt.map(function(f){
-    var esExtra = extraFlujos.indexOf(f) >= 0;
+  chartFlujo=new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  var srt=flujos.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+  document.getElementById("tb-flujo").innerHTML=srt.map(function(f){
+    var esExtra=extraFlujos.indexOf(f)>=0;
     return '<tr><td>'+f.fecha+'</td>'+
       '<td class="'+(f.ingresoARS>0?"pos":"")+'">'+( f.ingresoARS>0?fARS(f.ingresoARS):"-")+'</td>'+
       '<td class="'+(f.egresoARS>0?"neg":"")+'">'+( f.egresoARS>0?"-"+fARS(f.egresoARS):"-")+'</td>'+
@@ -1300,14 +1235,11 @@ function agregarFlujo(){
   var egr=parseFloat(document.getElementById("fl-egreso").value)||0;
   var mep=parseFloat(document.getElementById("fl-mep").value)||cotiz.mep;
   var nota=document.getElementById("fl-nota").value;
-  if(!fecha||(!ing&&!egr)){alert("Completá fecha y monto.");return;}
+  if(!fecha||(!ing&&!egr)){ alert("Completá fecha y monto."); return; }
   var nf={fecha:fecha,ingresoARS:ing,egresoARS:egr,mep:mep,ingresoUSD:ing>0?ing/mep:0,egresoUSD:egr>0?-egr/mep:0,nota:nota};
   extraFlujos.push(nf);
   flujos=clonar(FLUJO_BASE).concat(extraFlujos);
-  
-  // Actualizar liquido autom.
-  modificarLiquido(nf.ingresoUSD + nf.egresoUSD);
-
+  modificarLiquido(nf.ingresoUSD+nf.egresoUSD);
   save();
   ["fl-ingreso","fl-egreso","fl-nota"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("flujo-form").style.display="none";
@@ -1315,17 +1247,13 @@ function agregarFlujo(){
 }
 function elimFlujo(key){
   if(!confirm("¿Eliminar?")) return;
-  
-  // Revertir liquido
-  var fObj = extraFlujos.find(function(f){return (f.fecha+f.ingresoARS)===key;});
-  if(fObj) modificarLiquido(-(fObj.ingresoUSD + fObj.egresoUSD));
-  
+  var fObj=extraFlujos.find(function(f){return (f.fecha+f.ingresoARS)===key;});
+  if(fObj) modificarLiquido(-(fObj.ingresoUSD+fObj.egresoUSD));
   extraFlujos=extraFlujos.filter(function(f){return (f.fecha+f.ingresoARS)!==key;});
   flujos=clonar(FLUJO_BASE).concat(extraFlujos);
   save(); renderFlujo(); renderDashboard();
 }
 
-// ══ VENTAS ══
 function renderVentas(){
   var srt=resumenOps.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
   document.getElementById("tb-ventas").innerHTML=srt.map(function(d){
@@ -1345,7 +1273,6 @@ function alertaRecompra(tk,pv){
   document.getElementById('al-nota').value="Recompra (vendido en "+pv.toFixed(2)+")";
 }
 
-// ══ EXPORTAR ══
 function toCSV(h,r){function e(v){var s=String(v==null?"":v).replace(/"/g,'""');return(s.indexOf(",")>=0||s.indexOf("\n")>=0||s.indexOf('"')>=0)?'"'+s+'"':s;}return[h.map(e).join(",")].concat(r.map(function(row){return row.map(e).join(",");})).join("\n");}
 function dlCSV(n,c){var b=new Blob(["\uFEFF"+c],{type:"text/csv;charset=utf-8;"});var u=URL.createObjectURL(b);var a=document.createElement("a");a.href=u;a.download=n;a.click();URL.revokeObjectURL(u);}
 function exportarCartera(){
@@ -1365,7 +1292,6 @@ function exportarFlujo(){
 }
 function exportarCompleto(){ exportarCartera(); setTimeout(exportarVentas,400); setTimeout(exportarFlujo,800); }
 
-// ══ OPERAR ══
 function checkSectorOtro(){var sel=document.getElementById("c-sector").value;var c=document.getElementById("c-sector-custom");c.style.display=sel==="OTRO"?"block":"none";if(sel==="OTRO")c.focus();}
 function getSectorValue(){var sel=document.getElementById("c-sector").value;if(sel==="OTRO"){var c=document.getElementById("c-sector-custom").value.trim().toUpperCase();return c||"Otro";}return sel;}
 function calcPrev(){
@@ -1388,19 +1314,13 @@ function registrarCompra(){
   var precio=parseFloat(document.getElementById("c-precio").value);
   var ccl=parseFloat(document.getElementById("c-ccl").value)||cotiz.ccl;
   var fecha=document.getElementById("c-fecha").value;
-  
   if(!ticker||isNaN(cant)||isNaN(precio)||cant<=0||precio<=0){alert("Completá todos los campos.");return;}
-  
-  // Descontar compra del liquido
-  if(tipo !== "LIQUIDO") modificarLiquido(-(cant * precio));
-
-  var idxE=getExtraPos(ticker);
-  var idxB=getBasePos(ticker);
+  if(tipo!=="LIQUIDO") modificarLiquido(-(cant*precio));
+  var idxE=getExtraPos(ticker), idxB=getBasePos(ticker);
   if(idxE>=0){
     var ep=extraPos[idxE];
     ep.ppc=(ep.ppc*ep.cantidad+precio*cant)/(ep.cantidad+cant);
-    ep.cantidad+=cant;
-    ep._compras=(ep._compras||0)+1;
+    ep.cantidad+=cant; ep._compras=(ep._compras||0)+1;
   } else if(idxB>=0){
     var bp=POS_INIT[idxB];
     extraPos.push({ticker:ticker,nombre:bp.nombre,tipo:bp.tipo,sector:bp.sector,cantidad:bp.cantidad+cant,ppc:(bp.ppc*bp.cantidad+precio*cant)/(bp.cantidad+cant),_compras:1});
@@ -1426,13 +1346,9 @@ function registrarVenta(){
   if(cant>pos.cantidad+0.001){alert("Solo tenés "+fmt(pos.cantidad,3)+" uds.");return;}
   var gp=(precio-pos.ppc)*cant, gpPct=((precio-pos.ppc)/pos.ppc)*100;
   if(!confirm("Vendés "+cant+" "+ticker+" a "+fU(precio)+"\nG/P: "+(gp>=0?"+":"")+fU(gp)+" ("+pct(gpPct)+")\n¿Confirmás?")) return;
-  
-  // Sumar venta al liquido
-  modificarLiquido(cant * precio);
-
+  modificarLiquido(cant*precio);
   extraVentas.push({fecha:fecha||hoy(),ticker:ticker,cant:cant,pc:pos.ppc,pv:precio,gp:gp,ccl:ccl,tipo:pos.tipo==="AR"?"ACCIONES":pos.tipo==="BONO"?"BONOS":"CEDEAR"});
-  var idxE=getExtraPos(ticker);
-  var idxB=getBasePos(ticker);
+  var idxE=getExtraPos(ticker), idxB=getBasePos(ticker);
   if(idxE>=0){ extraPos[idxE].cantidad-=cant; if(extraPos[idxE].cantidad<=0.001) extraPos.splice(idxE,1); }
   else if(idxB>=0){ var bv=POS_INIT[idxB]; extraPos.push({ticker:ticker,nombre:bv.nombre,tipo:bv.tipo,sector:bv.sector,ppc:bv.ppc,cantidad:bv.cantidad-cant}); }
   reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
@@ -1464,86 +1380,62 @@ function actualizarSelectVenta(){
   if(cur) sel.value=cur;
 }
 
-
-// ══ GESTIÓN DE LÍQUIDO Y FCI ══
-function modificarLiquido(montoDiferencia) {
-  if (isNaN(montoDiferencia)) return;
-  var idxE = extraPos.findIndex(function(p){ return p.ticker === "LIQUIDO"; });
-  var actual = 2302; // Base
-  if (idxE >= 0 && extraPos[idxE].ppc != null) {
-      actual = extraPos[idxE].ppc;
-  } else {
-      var idxB = POS_INIT.findIndex(function(p){ return p.ticker === "LIQUIDO"; });
-      if(idxB >= 0) actual = POS_INIT[idxB].ppc;
-  }
-  upsertExtraPos("LIQUIDO", {ppc: actual + montoDiferencia, cantidad: 1});
+function modificarLiquido(montoDiferencia){
+  if(isNaN(montoDiferencia)) return;
+  var idxE=extraPos.findIndex(function(p){ return p.ticker==="LIQUIDO"; });
+  var actual=2302;
+  if(idxE>=0&&extraPos[idxE].ppc!=null) actual=extraPos[idxE].ppc;
+  else { var idxB=POS_INIT.findIndex(function(p){ return p.ticker==="LIQUIDO"; }); if(idxB>=0) actual=POS_INIT[idxB].ppc; }
+  upsertExtraPos("LIQUIDO",{ppc:actual+montoDiferencia,cantidad:1});
 }
-
-function ajustarLiquido() {
-  var idxE = extraPos.findIndex(function(p){ return p.ticker === "LIQUIDO"; });
-  var actual = 2302;
-  if(idxE >= 0 && extraPos[idxE].ppc != null) actual = extraPos[idxE].ppc;
-  else { var idxB = POS_INIT.findIndex(function(p){ return p.ticker === "LIQUIDO"; }); if(idxB >= 0) actual = POS_INIT[idxB].ppc; }
-
-  var nuevo = prompt("💰 Ajustar saldo Líquido (USD)\n\nValor actual: " + fU(actual), actual.toFixed(2));
-  if (nuevo === null) return;
-  var val = parseFloat(nuevo.replace(",","."));
-  if (isNaN(val) || val < 0) { alert("Valor inválido."); return; }
-  
-  upsertExtraPos("LIQUIDO", {ppc: val, cantidad: 1});
-  reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
+function ajustarLiquido(){
+  var idxE=extraPos.findIndex(function(p){ return p.ticker==="LIQUIDO"; });
+  var actual=2302;
+  if(idxE>=0&&extraPos[idxE].ppc!=null) actual=extraPos[idxE].ppc;
+  else { var idxB=POS_INIT.findIndex(function(p){ return p.ticker==="LIQUIDO"; }); if(idxB>=0) actual=POS_INIT[idxB].ppc; }
+  var nuevo=prompt("💰 Ajustar saldo Líquido (USD)\n\nValor actual: "+fU(actual),actual.toFixed(2));
+  if(nuevo===null) return;
+  var val=parseFloat(nuevo.replace(",","."));
+  if(isNaN(val)||val<0){ alert("Valor inválido."); return; }
+  upsertExtraPos("LIQUIDO",{ppc:val,cantidad:1});
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
   save(); renderCartera(); renderDashboard();
 }
-
-function abrirModalFCI() {
-  var overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  overlay.innerHTML =
-  '<div class="modal-box">'+
-      '<div class="modal-title">➕ Agregar FCI o Caución</div>'+
-      '<div class="form-grid">'+
-      '<div><label>Tipo</label><select id="fci-tipo"><option value="FCI">Fondo Común (FCI)</option><option value="CAUCION">Caución Bursátil</option></select></div>'+
-      '<div><label>Nombre / Ticker</label><input id="fci-nombre" placeholder="Ej: FCI Galileo..." style="text-transform:uppercase"></div>'+
-      '<div><label>Monto invertido (USD)</label><input id="fci-monto" type="number" step="0.01"></div>'+
-      '</div>'+
-      '<div style="display:flex;gap:8px;margin-top:14px">'+
-      '<button id="fci-ok" class="sbtn">✅ Confirmar</button>'+
-      '<button id="fci-no" class="sbtn" style="background:#888">Cancelar</button>'+
-      '</div>'+
-  '</div>';
+function abrirModalFCI(){
+  var overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  overlay.innerHTML='<div class="modal-box"><div class="modal-title">➕ Agregar FCI o Caución</div>'+
+    '<div class="form-grid">'+
+    '<div><label>Tipo</label><select id="fci-tipo"><option value="FCI">Fondo Común (FCI)</option><option value="CAUCION">Caución Bursátil</option></select></div>'+
+    '<div><label>Nombre / Ticker</label><input id="fci-nombre" placeholder="Ej: FCI Galileo..." style="text-transform:uppercase"></div>'+
+    '<div><label>Monto invertido (USD)</label><input id="fci-monto" type="number" step="0.01"></div></div>'+
+    '<div style="display:flex;gap:8px;margin-top:14px"><button id="fci-ok" class="sbtn">✅ Confirmar</button><button id="fci-no" class="sbtn" style="background:#888">Cancelar</button></div></div>';
   document.body.appendChild(overlay);
-  
-  document.getElementById("fci-no").onclick = function(){ document.body.removeChild(overlay); };
-  document.getElementById("fci-ok").onclick = function(){
-      var tipo = document.getElementById("fci-tipo").value;
-      var nombre = document.getElementById("fci-nombre").value.trim().toUpperCase();
-      var monto = parseFloat(document.getElementById("fci-monto").value);
-      
-      if(!nombre || isNaN(monto) || monto <= 0) { alert("Completá todos los campos."); return; }
-      if(posiciones.some(function(p){ return p.ticker === nombre; })) { alert("Ese nombre ya existe."); return; }
-      
-      modificarLiquido(-monto); // Resta los usd del efectivo
-      upsertExtraPos(nombre, {nombre: tipo + " " + nombre, tipo: "LIQUIDO", sector: "LIQUIDO", cantidad: 1, ppc: monto});
-      
-      reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-      save(); document.body.removeChild(overlay); renderCartera(); renderDashboard();
+  document.getElementById("fci-no").onclick=function(){ document.body.removeChild(overlay); };
+  document.getElementById("fci-ok").onclick=function(){
+    var tipo=document.getElementById("fci-tipo").value;
+    var nombre=document.getElementById("fci-nombre").value.trim().toUpperCase();
+    var monto=parseFloat(document.getElementById("fci-monto").value);
+    if(!nombre||isNaN(monto)||monto<=0){ alert("Completá todos los campos."); return; }
+    if(posiciones.some(function(p){ return p.ticker===nombre; })){ alert("Ese nombre ya existe."); return; }
+    modificarLiquido(-monto);
+    upsertExtraPos(nombre,{nombre:tipo+" "+nombre,tipo:"LIQUIDO",sector:"LIQUIDO",cantidad:1,ppc:monto});
+    reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+    save(); document.body.removeChild(overlay); renderCartera(); renderDashboard();
   };
 }
-
-function eliminarFCI(ticker) {
-  if(!confirm("¿Cerrar " + ticker + " y devolver el saldo a Líquido?")) return;
-  var pos = posiciones.find(function(p){ return p.ticker === ticker; });
-  if(pos) {
-      modificarLiquido(pos.ppc); // Suma los usd devuelta al efectivo
-      var idxE = extraPos.findIndex(function(p){ return p.ticker === ticker; });
-      if(idxE >= 0) extraPos.splice(idxE, 1);
-      
-      reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-      save(); renderCartera(); renderDashboard();
+function eliminarFCI(ticker){
+  if(!confirm("¿Cerrar "+ticker+" y devolver el saldo a Líquido?")) return;
+  var pos=posiciones.find(function(p){ return p.ticker===ticker; });
+  if(pos){
+    modificarLiquido(pos.ppc);
+    var idxE=extraPos.findIndex(function(p){ return p.ticker===ticker; });
+    if(idxE>=0) extraPos.splice(idxE,1);
+    reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+    save(); renderCartera(); renderDashboard();
   }
 }
 
-// ══ NAV ══
 function showTab(name,el){
   ["dashboard","cartera","operar","flujo","alertas","ventas","exportar"].forEach(function(t){
     var e=document.getElementById("tab-"+t); if(e) e.style.display=t===name?"block":"none";
@@ -1567,17 +1459,16 @@ function loadAll(){
   });
 }
 
-// ══ INIT ══
-document.getElementById("c-fecha").value  = hoy();
-document.getElementById("v-fecha").value  = hoy();
-document.getElementById("fl-fecha").value = hoy();
+document.getElementById("c-fecha").value=hoy();
+document.getElementById("v-fecha").value=hoy();
+document.getElementById("fl-fecha").value=hoy();
 pedirPermisoNotificaciones();
 actualizarSelectVenta();
-setInterval(loadAll, 5*60*1000);
+setInterval(loadAll,5*60*1000);
 setInterval(function(){
-  if(accessToken && Object.keys(precios).length > 0) checkAlertas();
-  if(document.getElementById("tab-alertas").style.display !== "none") renderAlertas();
-}, 30000);
+  if(accessToken&&Object.keys(precios).length>0) checkAlertas();
+  if(document.getElementById("tab-alertas").style.display!=="none") renderAlertas();
+},30000);
 intentarRestaurarSesion();
 </script>
 </body>
