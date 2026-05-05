@@ -771,36 +771,30 @@ function fetchBono(tk){
 }
 
 // NUEVO EXTRACTOR BLINDADO PARA ARGENTINA
-function fetchARfromData(tk, arr){
-  var item = arr.find(function(x){ return (x.ticker||x.symbol||"").toUpperCase() === tk.toUpperCase(); });
-  if(item){
-    var pARS = parseFloat(item.c||item.price||item.last||item.ultimo||0);
-    if(pARS > 0){
-      var mep  = cotiz.mep > 100 ? cotiz.mep : 1150;
-      
-      // 1. Buscar en propiedades comunes de variación
-      var rawVar = item.var || item.variacion || item.change || item.change_pct || item.pct || item.dp || item.cp;
-      var varHoy = 0;
-      
-      if (rawVar !== undefined && rawVar !== null && rawVar !== "") {
-          // Si viene como string tipo "1,5%" o "1.5", quitamos la coma y el %
-          var stringVar = String(rawVar).replace("%", "").replace(",", ".");
-          varHoy = parseFloat(stringVar);
-      }
-      
-      // 2. Si no vino el porcentaje o falló, calcular usando el cierre anterior
-      if (isNaN(varHoy) || varHoy === 0) {
-          var prev = parseFloat(String(item.pc || item.pclose || item.prev || item.cierre_anterior || item.o || 0).replace(",", "."));
-          if (prev > 0 && prev !== pARS) {
-              varHoy = ((pARS - prev) / prev * 100);
-          } else {
-              varHoy = 0;
-          }
-      }
+// ══ REEMPLAZAR solo esta función en el código ══
 
-      return Promise.resolve({precio:pARS/mep, varHoy:varHoy, precioARS:pARS});
+function fetchARfromData(tk, arr){
+  var tkUp = tk.toUpperCase();
+
+  // Buscar por "symbol" (así viene en la API de data912)
+  var item = arr.find(function(x){
+    return (x.symbol || "").toUpperCase() === tkUp;
+  });
+
+  if(item){
+    var pARS = parseFloat(item.c || item.px_bid || 0);
+    if(pARS > 0){
+      var mep = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
+      var pUSD = pARS / mep;
+
+      // pct_change ya viene como porcentaje listo (ej: 4.63 = +4.63%)
+      var varHoy = parseFloat(item.pct_change || 0);
+      if(isNaN(varHoy)) varHoy = 0;
+
+      return Promise.resolve({ precio: pUSD, varHoy: varHoy, precioARS: pARS });
     }
   }
+
   return Promise.resolve(null);
 }
 
