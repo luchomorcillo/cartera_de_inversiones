@@ -701,12 +701,29 @@ function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(guardarEnDriveA
 
 // ══ COTIZACIONES ══
 function fetchCotizaciones(){
-  var m = localStorage.getItem("mep_manual");
-  if(m && parseFloat(m) > 100) cotiz.mep = parseFloat(m);
   return fetch("https://dolarapi.com/v1/dolares/contadoconliqui")
   .then(function(r){ return r.json(); })
   .then(function(d){ if(d.venta && d.venta > 100) cotiz.ccl = d.venta; })
   .catch(function(){})
+  .then(function(){
+    // Intentar obtener MEP real via proxy anti-CORS
+    return fetch("https://api.allorigins.win/get?url="+encodeURIComponent("https://dolarapi.com/v1/dolares/bolsa"))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var data = JSON.parse(d.contents);
+      if(data.venta && data.venta > 100){
+        cotiz.mep = data.venta;
+        localStorage.removeItem("mep_manual"); // limpiar manual si ya tenemos real
+      }
+    })
+    .catch(function(){
+      // Fallback: MEP manual o CCL - 2%
+      var mepManual = localStorage.getItem("mep_manual");
+      cotiz.mep = (mepManual && parseFloat(mepManual) > 100)
+        ? parseFloat(mepManual)
+        : Math.round(cotiz.ccl * 0.98 * 100) / 100;
+    });
+  })
   .then(function(){
     document.getElementById("hd-ccl").textContent = "$"+fmt(cotiz.ccl);
     document.getElementById("c-ccl").value = cotiz.ccl;
