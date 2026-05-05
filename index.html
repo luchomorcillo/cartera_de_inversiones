@@ -248,7 +248,7 @@ tr:hover td{background:#fafafa}
       <div class="card-title" style="margin-bottom:0">Líquido / FCI <span class="badge b-liq">Cash</span></div>
       <button class="sbtn" style="font-size:11px;padding:5px 12px" onclick="preCompra('LIQUIDO')">+ Agregar</button>
     </div>
-    <div style="overflow-x:auto"><table><thead><tr><th>Activo</th><th>USD</th><th>% cartera</th></tr></thead><tbody id="tb-liq"></tbody></table></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Activo</th><th>USD</th><th>% cartera</th><th></th></tr></thead><tbody id="tb-liq"></tbody></table></div>
   </div>
 </div>
 
@@ -966,7 +966,37 @@ function getPosData(){
     return Object.assign({}, pos, {precioUSD:pr.precio, varHoy:pr.varHoy, precioARS:pr.precioARS, gpPct:gpPct, gpUSD:(pr.precio-pos.ppc)*pos.cantidad, total:pr.precio*pos.cantidad});
   });
 }
-function getLiq(){ return posiciones.filter(function(p){ return p.tipo === "LIQUIDO"; }).map(function(p){ return Object.assign({},p,{total:p.ppc*p.cantidad, gpPct:0, gpUSD:0}); }); }
+function calcularLiquidoUSD(){
+  var tI = flujos.reduce(function(s,f){ return s+(f.ingresoUSD||0); },0);
+  var tE = flujos.reduce(function(s,f){ return s+Math.abs(f.egresoUSD||0); },0);
+  var neto = tI - tE;
+  // Restar capital de compras nuevas (las que están en extraPos con _compras)
+  var gastoCompras = extraPos.reduce(function(s,ep){
+    if(ep._compras && ep._compras > 0){
+      var base = POS_INIT.find(function(p){ return p.ticker===ep.ticker; });
+      var cantExtra = base ? ep.cantidad - base.cantidad : ep.cantidad;
+      var ppcExtra  = ep.ppc;
+      if(cantExtra > 0) s += cantExtra * ppcExtra;
+    }
+    return s;
+  },0);
+  // Sumar ingresos de ventas nuevas
+  var ingVentas = extraVentas.reduce(function(s,v){ return s+(v.cant*v.pv); },0);
+  // Ajuste manual
+  var ajuste = parseFloat(localStorage.getItem("liquido_ajuste")||"0");
+  return Math.max(0, neto - gastoCompras + ingVentas + ajuste);
+}
+
+function getLiq(){
+  var liquidoUSD = calcularLiquidoUSD();
+  var fciUSD     = parseFloat(localStorage.getItem("fci_usd")||"0");
+  var items = [];
+  items.push({ticker:"LIQUIDO", nombre:"Efectivo USD", tipo:"LIQUIDO", sector:"LIQUIDO", cantidad:1, ppc:liquidoUSD, total:liquidoUSD, gpPct:0, gpUSD:0});
+  if(fciUSD > 0){
+    items.push({ticker:"FCI $", nombre:"FCI Pesos", tipo:"LIQUIDO", sector:"LIQUIDO", cantidad:1, ppc:fciUSD, total:fciUSD, gpPct:0, gpUSD:0});
+  }
+  return items;
+}
 
 // ══ SECTOR VIEW ══
 function renderSectorView(){
@@ -1158,8 +1188,17 @@ function renderCartera(){
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
   }).join("") : '<tr><td colspan="8" class="empty-state">Sin bonos</td></tr>';
   document.getElementById("tb-liq").innerHTML = liq.map(function(l){
-    return '<tr><td><span class="tkr">'+l.ticker+'</span> <small style="color:#888">'+l.nombre+'</small></td><td>'+fU(l.total)+'</td><td>'+fmt(grand>0?l.total/grand*100:0,1)+'%</td></tr>';
-  }).join("");
+    var esLiquido = l.ticker === "LIQUIDO";
+    var esFCI     = l.ticker === "FCI $";
+    var editBtn   = esLiquido
+      ? '<button class="edit-btn" onclick="ajustarLiquido()">✏️ Ajustar</button>'
+      : '<button class="edit-btn" onclick="editarFCI()">✏️ Editar</button>';
+    return '<tr>'+
+      '<td><span class="tkr">'+l.ticker+'</span> <small style="color:#888">'+l.nombre+'</small></td>'+
+      '<td>'+fU(l.total)+'</td>'+
+      '<td>'+fmt(grand>0?l.total/grand*100:0,1)+'%</td>'+
+      '<td>'+editBtn+'</td></tr>';
+  }).join("") || '<tr><td colspan="4" class="empty-state">Sin líquido</td></tr>';
 }
 
 // ══ EDITAR POSICION ══
@@ -1213,6 +1252,41 @@ function editarPosicion(ticker){
     renderCartera();
     renderDashboard();
   };
+}
+
+function ajustarLiquido(){
+  var actual = calcularLiquidoUSD();
+  var ajusteActual = parseFloat(localStorage.getItem("liquido_ajuste")||"0");
+  var nuevo = prompt(
+    "💵 Ajustar Líquido USD\n\n"+
+    "Calculado automáticamente: "+fU(actual)+"\n"+
+    "Ajuste actual: "+fU(ajusteActual)+"\n\n"+
+    "Ingresá el saldo REAL que tenés en USD\n"+
+    "(Ej: si tenés 500 USD reales, escribí 500)",
+    (actual+ajusteActual).toFixed(2)
+  );
+  if(nuevo===null) return;
+  var v = parseFloat(nuevo.replace(",","."));
+  if(isNaN(v) || v < 0){ alert("Valor inválido."); return; }
+  var ajuste = v - actual;
+  localStorage.setItem("liquido_ajuste", ajuste.toFixed(2));
+  renderCartera(); renderDashboard();
+}
+
+function editarFCI(){
+  var actual = parseFloat(localStorage.getItem("fci_usd")||"0");
+  var nuevo = prompt(
+    "📊 FCI Pesos — Valor en USD\n\n"+
+    "Actual: "+fU(actual)+"\n\n"+
+    "Ingresá el valor actual de tu FCI en USD\n"+
+    "(Convertí el saldo en pesos ÷ MEP $"+fmt(cotiz.mep)+")",
+    actual.toFixed(2)
+  );
+  if(nuevo===null) return;
+  var v = parseFloat(nuevo.replace(",","."));
+  if(isNaN(v) || v < 0){ alert("Valor inválido."); return; }
+  localStorage.setItem("fci_usd", v.toFixed(2));
+  renderCartera(); renderDashboard();
 }
 
 function editarPrecioBono(tk){
