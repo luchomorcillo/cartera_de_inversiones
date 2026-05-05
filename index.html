@@ -532,7 +532,6 @@ function getBasePos(ticker){
   return POS_INIT.findIndex(function(p){ return p.ticker === ticker; });
 }
 function upsertExtraPos(ticker, cambios){
-  // Actualiza extraPos existente o crea uno nuevo copiando desde base + cambios
   var idxE = getExtraPos(ticker);
   if(idxE >= 0){
     Object.assign(extraPos[idxE], cambios);
@@ -639,7 +638,7 @@ function intentarRestaurarSesion(){
   if((Date.now() - parseInt(ts)) / 60000 < 55){
     renovarTokenSilencioso()
     .then(function(){ mostrarUsuario(); cargarDesdeDrive().then(function(){ ocultarLoginScreen(); loadAll(); }); })
-    .catch(function(){ /* falla silencioso, el usuario verá la pantalla de login */ });
+    .catch(function(){});
   }
 }
 function mostrarUsuario(){
@@ -705,18 +704,16 @@ function fetchCotizaciones(){
   .then(function(d){ if(d.venta && d.venta > 100) cotiz.ccl = d.venta; })
   .catch(function(){})
   .then(function(){
-    // Intentar obtener MEP real via proxy anti-CORS
     return fetch("https://api.allorigins.win/get?url="+encodeURIComponent("https://dolarapi.com/v1/dolares/bolsa"))
     .then(function(r){ return r.json(); })
     .then(function(d){
       var data = JSON.parse(d.contents);
       if(data.venta && data.venta > 100){
         cotiz.mep = data.venta;
-        localStorage.removeItem("mep_manual"); // limpiar manual si ya tenemos real
+        localStorage.removeItem("mep_manual");
       }
     })
     .catch(function(){
-      // Fallback: MEP manual o CCL - 2%
       var mepManual = localStorage.getItem("mep_manual");
       cotiz.mep = (mepManual && parseFloat(mepManual) > 100)
         ? parseFloat(mepManual)
@@ -740,12 +737,26 @@ function getARData(){
   .then(function(a){ _cacheAR = a; _cacheARts = Date.now(); return a; })
   .catch(function(){ return []; });
 }
+
 function fetchFinnhub(tk){
-  return fetch("https://finnhub.io/api/v1/quote?symbol="+tk+"&token="+FINNHUB_KEY)
+  var symOpt1 = tk;
+  var symOpt2 = tk.replace(".", "-"); // Prepara la versión con guion para Finnhub
+  return fetch("https://finnhub.io/api/v1/quote?symbol="+symOpt1+"&token="+FINNHUB_KEY)
   .then(function(r){ return r.json(); })
-  .then(function(d){ return d.c && d.c > 0 ? {precio:d.c, varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0, precioARS:null} : null; })
+  .then(function(d){ 
+    if(d.c && d.c > 0) return {precio:d.c, varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0, precioARS:null};
+    if(symOpt1 !== symOpt2){
+        return fetch("https://finnhub.io/api/v1/quote?symbol="+symOpt2+"&token="+FINNHUB_KEY)
+        .then(function(r2){ return r2.json(); })
+        .then(function(d2){
+           return d2.c && d2.c > 0 ? {precio:d2.c, varHoy:d2.pc>0?((d2.c-d2.pc)/d2.pc*100):0, precioARS:null} : null;
+        }).catch(function(){ return null; });
+    }
+    return null;
+  })
   .catch(function(){ return null; });
 }
+
 function fetchBono(tk){
   var map = {AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
   var sym = map[tk];
@@ -758,20 +769,29 @@ function fetchBono(tk){
     return null;
   }).catch(function(){ return null; });
 }
+
+// NUEVO EXTRACTOR BLINDADO PARA ARGENTINA
 function fetchARfromData(tk, arr){
   var item = arr.find(function(x){ return (x.ticker||x.symbol||"").toUpperCase() === tk.toUpperCase(); });
   if(item){
-    var pARS = parseFloat(item.c||item.price||item.last||0);
+    var pARS = parseFloat(item.c||item.price||item.last||item.ultimo||0);
     if(pARS > 0){
       var mep  = cotiz.mep > 100 ? cotiz.mep : 1150;
-
-      // 1. Intentamos obtener el % de cambio directo (dp, cp, change_pct)
-      var varHoy = parseFloat(item.dp || item.change_pct || item.cp || item.pct_change || 0);
-
-      // 2. Si no vino el porcentaje directo, lo calculamos con el cierre anterior (pc, prev, pclose)
-      if (varHoy === 0 || isNaN(varHoy)) {
-          var prev = parseFloat(item.pc || item.pclose || item.prev || item.previousClose || item.o || 0);
-          if (prev > 0) {
+      
+      // 1. Buscar en propiedades comunes de variación
+      var rawVar = item.var || item.variacion || item.change || item.change_pct || item.pct || item.dp || item.cp;
+      var varHoy = 0;
+      
+      if (rawVar !== undefined && rawVar !== null && rawVar !== "") {
+          // Si viene como string tipo "1,5%" o "1.5", quitamos la coma y el %
+          var stringVar = String(rawVar).replace("%", "").replace(",", ".");
+          varHoy = parseFloat(stringVar);
+      }
+      
+      // 2. Si no vino el porcentaje o falló, calcular usando el cierre anterior
+      if (isNaN(varHoy) || varHoy === 0) {
+          var prev = parseFloat(String(item.pc || item.pclose || item.prev || item.cierre_anterior || item.o || 0).replace(",", "."));
+          if (prev > 0 && prev !== pARS) {
               varHoy = ((pARS - prev) / prev * 100);
           } else {
               varHoy = 0;
@@ -1453,6 +1473,7 @@ function actualizarSelectVenta(){
 
 // ══ GESTIÓN DE LÍQUIDO Y FCI ══
 function modificarLiquido(montoDiferencia) {
+  if (isNaN(montoDiferencia)) return;
   var idxE = extraPos.findIndex(function(p){ return p.ticker === "LIQUIDO"; });
   var actual = 2302; // Base
   if (idxE >= 0 && extraPos[idxE].ppc != null) {
