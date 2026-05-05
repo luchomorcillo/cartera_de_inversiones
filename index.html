@@ -788,8 +788,8 @@ function fetchARfromData(tk, arr){
       var pUSD = pARS / mep;
 
       // pct_change ya viene como porcentaje listo (ej: 4.63 = +4.63%)
-      var varHoy = parseFloat(item.pct_change || 0);
-      if(isNaN(varHoy)) varHoy = 0;
+      var varHoy = (item.pct_change !== undefined && item.pct_change !== null) ? parseFloat(item.pct_change) : 0;
+      
 
       return Promise.resolve({ precio: pUSD, varHoy: varHoy, precioARS: pARS });
     }
