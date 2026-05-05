@@ -764,12 +764,26 @@ function fetchARfromData(tk, arr){
     var pARS = parseFloat(item.c||item.price||item.last||0);
     if(pARS > 0){
       var mep  = cotiz.mep > 100 ? cotiz.mep : 1150;
-      var prev = parseFloat(item.pclose||item.o||0);
-      return Promise.resolve({precio:pARS/mep, varHoy:prev>0?((pARS-prev)/prev*100):0, precioARS:pARS});
+
+      // 1. Intentamos obtener el % de cambio directo (dp, cp, change_pct)
+      var varHoy = parseFloat(item.dp || item.change_pct || item.cp || item.pct_change || 0);
+
+      // 2. Si no vino el porcentaje directo, lo calculamos con el cierre anterior (pc, prev, pclose)
+      if (varHoy === 0 || isNaN(varHoy)) {
+          var prev = parseFloat(item.pc || item.pclose || item.prev || item.previousClose || item.o || 0);
+          if (prev > 0) {
+              varHoy = ((pARS - prev) / prev * 100);
+          } else {
+              varHoy = 0;
+          }
+      }
+
+      return Promise.resolve({precio:pARS/mep, varHoy:varHoy, precioARS:pARS});
     }
   }
   return Promise.resolve(null);
 }
+
 function getMercadoTicker(tk){
   var pos = posiciones.find(function(p){ return p.ticker === tk; });
   if(pos) return pos.tipo === "AR" ? "AR" : pos.tipo === "BONO" ? "BONO" : "NYSE";
