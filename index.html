@@ -248,7 +248,7 @@ tr:hover td{background:#fafafa}
       <div class="card-title" style="margin-bottom:0">Líquido / FCI <span class="badge b-liq">Cash</span></div>
       <button class="sbtn" style="font-size:11px;padding:5px 12px" onclick="preCompra('LIQUIDO')">+ Agregar</button>
     </div>
-    <div style="overflow-x:auto"><table><thead><tr><th>Activo</th><th>USD</th><th>% cartera</th><th></th></tr></thead><tbody id="tb-liq"></tbody></table></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>Activo</th><th>USD</th><th>% cartera</th><th>Acciones</th></tr></thead><tbody id="tb-liq"></tbody></table></div>
   </div>
 </div>
 
@@ -390,13 +390,13 @@ tr:hover td{background:#fafafa}
   </div>
 </div>
 
-</div><!-- /content -->
+</div>
 
 <script>
 // ══ CONFIG ══
 var CLIENT_ID    = "270599207285-ueru7itb2165915ln06fh2nf3efv8k59.apps.googleusercontent.com";
 var SCOPES       = "https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/userinfo.profile";
-var FILE_NAME    = "cartera-v9.json";
+var FILE_NAME    = "cartera-v10.json";
 var FINNHUB_KEY  = "d7qohjhr01qudmin0b2gd7qohjhr01qudmin0b30";
 var BASE_COMPRAS = 92;
 var BASE_VENTAS  = 37;
@@ -526,30 +526,25 @@ var _cacheAR    = null, _cacheARts = 0;
 function clonar(a){ return JSON.parse(JSON.stringify(a)); }
 
 // ══ HELPERS ══
-function getExtraPos(ticker){
-  return extraPos.findIndex(function(p){ return p.ticker === ticker; });
-}
-function getBasePos(ticker){
-  return POS_INIT.findIndex(function(p){ return p.ticker === ticker; });
-}
+function getExtraPos(ticker){ return extraPos.findIndex(function(p){ return p.ticker===ticker; }); }
+function getBasePos(ticker){  return POS_INIT.findIndex(function(p){ return p.ticker===ticker; }); }
 function upsertExtraPos(ticker, cambios){
-  // Actualiza extraPos existente o crea uno nuevo copiando desde base + cambios
   var idxE = getExtraPos(ticker);
   if(idxE >= 0){
     Object.assign(extraPos[idxE], cambios);
   } else {
     var idxB = getBasePos(ticker);
-    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker, nombre:ticker, tipo:"CEDEAR", sector:"TECNOLOGICO", cantidad:0, ppc:0};
+    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker,nombre:ticker,tipo:"CEDEAR",sector:"TECNOLOGICO",cantidad:0,ppc:0};
     extraPos.push(Object.assign(base, cambios));
   }
 }
 
 // ══ MEP ══
 function editarMEP(){
-  var nuevo = prompt("💱 Dólar MEP — valor actual\n(rava.com / invertironline)\n\nActual: $"+fmt(cotiz.mep), cotiz.mep);
-  if(nuevo === null) return;
+  var nuevo = prompt("💱 Dólar MEP — valor actual\n(rava.com)\n\nActual: $"+fmt(cotiz.mep), cotiz.mep);
+  if(nuevo===null) return;
   var v = parseFloat(String(nuevo).replace(",","."));
-  if(isNaN(v) || v < 100){ alert("Valor inválido."); return; }
+  if(isNaN(v)||v<100){ alert("Valor inválido."); return; }
   cotiz.mep = v;
   localStorage.setItem("mep_manual", v);
   actualizarMEPUI();
@@ -557,8 +552,7 @@ function editarMEP(){
 }
 function actualizarMEPUI(){
   document.getElementById("hd-mep").textContent = "$"+fmt(cotiz.mep)+" ✏️";
-  var b = document.getElementById("mep-badge");
-  if(b) b.textContent = fmt(cotiz.mep);
+  var b = document.getElementById("mep-badge"); if(b) b.textContent = fmt(cotiz.mep);
   document.getElementById("fl-mep").value = cotiz.mep;
 }
 
@@ -570,13 +564,13 @@ function reconstruirEstado(d){
   extraVentas = d.extraVentas || [];
   alertas     = d.alertas     || [];
   extraPos.forEach(function(ep){
-    var i = posiciones.findIndex(function(p){ return p.ticker === ep.ticker; });
-    if(i >= 0){
-      posiciones[i].nombre   = ep.nombre   || posiciones[i].nombre;
-      posiciones[i].sector   = ep.sector   || posiciones[i].sector;
-      posiciones[i].tipo     = ep.tipo     || posiciones[i].tipo;
-      posiciones[i].cantidad = ep.cantidad != null ? ep.cantidad : posiciones[i].cantidad;
-      posiciones[i].ppc      = ep.ppc      != null ? ep.ppc      : posiciones[i].ppc;
+    var i = posiciones.findIndex(function(p){ return p.ticker===ep.ticker; });
+    if(i>=0){
+      if(ep.nombre   != null) posiciones[i].nombre   = ep.nombre;
+      if(ep.sector   != null) posiciones[i].sector   = ep.sector;
+      if(ep.tipo     != null) posiciones[i].tipo     = ep.tipo;
+      if(ep.cantidad != null) posiciones[i].cantidad = ep.cantidad;
+      if(ep.ppc      != null) posiciones[i].ppc      = ep.ppc;
     } else {
       posiciones.push(clonar(ep));
     }
@@ -585,304 +579,281 @@ function reconstruirEstado(d){
   resumenOps = clonar(RESUMEN_BASE).concat(extraVentas);
 }
 function estadoParaDrive(){
-  return {extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas, v:9, lastSync:new Date().toISOString()};
+  return {extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas,v:10,lastSync:new Date().toISOString()};
 }
 
 // ══ GOOGLE DRIVE ══
 function cargarGoogleSDK(){
   return new Promise(function(res){
-    if(window.google){ res(); return; }
-    var s = document.createElement("script");
-    s.src = "https://accounts.google.com/gsi/client";
-    s.onload = res;
-    document.head.appendChild(s);
+    if(window.google){res();return;}
+    var s=document.createElement("script"); s.src="https://accounts.google.com/gsi/client"; s.onload=res; document.head.appendChild(s);
   });
 }
 function loginGoogle(){
   cargarGoogleSDK().then(function(){
     google.accounts.oauth2.initTokenClient({
-      client_id: CLIENT_ID, scope: SCOPES,
-      callback: function(resp){
-        if(resp.error){ alert("Error: "+resp.error); return; }
-        accessToken = resp.access_token;
-        localStorage.setItem("gtoken_ts", Date.now());
+      client_id:CLIENT_ID,scope:SCOPES,
+      callback:function(resp){
+        if(resp.error){alert("Error: "+resp.error);return;}
+        accessToken=resp.access_token;
+        localStorage.setItem("gtoken_ts",Date.now());
         mostrarUsuario();
-        cargarDesdeDrive().then(function(){ ocultarLoginScreen(); loadAll(); });
+        cargarDesdeDrive().then(function(){ocultarLoginScreen();loadAll();});
       }
     }).requestAccessToken();
   });
 }
 function ocultarLoginScreen(){
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("btn-logout").style.display   = "block";
-  document.getElementById("user-pill").style.display    = "flex";
+  document.getElementById("login-screen").style.display="none";
+  document.getElementById("btn-logout").style.display="block";
+  document.getElementById("user-pill").style.display="flex";
 }
 function renovarTokenSilencioso(){
-  return new Promise(function(res, rej){
+  return new Promise(function(res,rej){
     cargarGoogleSDK().then(function(){
       try{
         google.accounts.oauth2.initTokenClient({
-          client_id: CLIENT_ID, scope: SCOPES, prompt: "",
-          callback: function(resp){
-            if(resp.error){ rej(resp.error); return; }
-            accessToken = resp.access_token;
-            localStorage.setItem("gtoken_ts", Date.now());
-            res();
-          }
+          client_id:CLIENT_ID,scope:SCOPES,prompt:"",
+          callback:function(resp){if(resp.error){rej(resp.error);return;}accessToken=resp.access_token;localStorage.setItem("gtoken_ts",Date.now());res();}
         }).requestAccessToken({prompt:""});
-      } catch(e){ rej(e); }
+      }catch(e){rej(e);}
     });
   });
 }
 function intentarRestaurarSesion(){
-  var ts = localStorage.getItem("gtoken_ts");
-  if(!ts) return;
-  if((Date.now() - parseInt(ts)) / 60000 < 55){
+  var ts=localStorage.getItem("gtoken_ts"); if(!ts) return;
+  if((Date.now()-parseInt(ts))/60000<55){
     renovarTokenSilencioso()
-    .then(function(){ mostrarUsuario(); cargarDesdeDrive().then(function(){ ocultarLoginScreen(); loadAll(); }); })
-    .catch(function(){ /* falla silencioso, el usuario verá la pantalla de login */ });
+    .then(function(){mostrarUsuario();cargarDesdeDrive().then(function(){ocultarLoginScreen();loadAll();});})
+    .catch(function(){});
   }
 }
 function mostrarUsuario(){
   fetch("https://www.googleapis.com/oauth2/v2/userinfo",{headers:{Authorization:"Bearer "+accessToken}})
-  .then(function(r){ return r.json(); })
-  .then(function(d){ document.getElementById("user-nm").textContent = d.given_name||""; document.getElementById("user-av").src = d.picture||""; })
-  .catch(function(){});
+  .then(function(r){return r.json();}).then(function(d){document.getElementById("user-nm").textContent=d.given_name||"";document.getElementById("user-av").src=d.picture||"";}).catch(function(){});
 }
 function logout(){
-  if(!confirm("¿Cerrar sesión?")) return;
-  accessToken = null; driveFileId = null;
-  localStorage.removeItem("gtoken_ts");
-  document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("btn-logout").style.display   = "none";
-  document.getElementById("user-pill").style.display    = "none";
+  if(!confirm("¿Cerrar sesión?"))return;
+  accessToken=null;driveFileId=null;localStorage.removeItem("gtoken_ts");
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("btn-logout").style.display="none";
+  document.getElementById("user-pill").style.display="none";
 }
 function buscarArchivoEnDrive(){
   return fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=name='"+FILE_NAME+"'&fields=files(id)",{headers:{Authorization:"Bearer "+accessToken}})
-  .then(function(r){ return r.json(); }).then(function(d){ return d.files && d.files.length > 0 ? d.files[0].id : null; });
+  .then(function(r){return r.json();}).then(function(d){return d.files&&d.files.length>0?d.files[0].id:null;});
 }
 function leerArchivoDrive(id){
-  return fetch("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media",{headers:{Authorization:"Bearer "+accessToken}}).then(function(r){ return r.json(); });
+  return fetch("https://www.googleapis.com/drive/v3/files/"+id+"?alt=media",{headers:{Authorization:"Bearer "+accessToken}}).then(function(r){return r.json();});
 }
 function crearArchivoDrive(datos){
-  var f = new FormData();
-  f.append("metadata", new Blob([JSON.stringify({name:FILE_NAME,parents:["appDataFolder"]})],{type:"application/json"}));
-  f.append("file",     new Blob([JSON.stringify(datos)],{type:"application/json"}));
+  var f=new FormData();
+  f.append("metadata",new Blob([JSON.stringify({name:FILE_NAME,parents:["appDataFolder"]})],{type:"application/json"}));
+  f.append("file",new Blob([JSON.stringify(datos)],{type:"application/json"}));
   return fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id",{method:"POST",headers:{Authorization:"Bearer "+accessToken},body:f})
-  .then(function(r){ return r.json(); }).then(function(d){ return d.id; });
+  .then(function(r){return r.json();}).then(function(d){return d.id;});
 }
-function actualizarArchivoDrive(id, datos){
+function actualizarArchivoDrive(id,datos){
   return fetch("https://www.googleapis.com/upload/drive/v3/files/"+id+"?uploadType=media",
     {method:"PATCH",headers:{Authorization:"Bearer "+accessToken,"Content-Type":"application/json"},body:JSON.stringify(datos)});
 }
 function cargarDesdeDrive(){
   return buscarArchivoEnDrive().then(function(id){
-    driveFileId = id;
-    if(id){ return leerArchivoDrive(id).then(function(d){ reconstruirEstado(d); return guardarEnDriveAhora(); }); }
-    else   { reconstruirEstado({}); return guardarEnDriveAhora(); }
-  }).catch(function(e){ console.error("Drive error:",e); reconstruirEstado({}); });
+    driveFileId=id;
+    if(id){return leerArchivoDrive(id).then(function(d){reconstruirEstado(d);return guardarEnDriveAhora();});}
+    else{reconstruirEstado({});return guardarEnDriveAhora();}
+  }).catch(function(e){console.error("Drive:",e);reconstruirEstado({});});
 }
-function syncBar(msg, color){
-  var b = document.getElementById("sync-bar");
-  b.style.background = color || "#1e7e34";
-  b.textContent = msg; b.style.display = "block";
-  setTimeout(function(){ b.style.display = "none"; }, 3000);
+function syncBar(msg,color){
+  var b=document.getElementById("sync-bar");b.style.background=color||"#1e7e34";b.textContent=msg;b.style.display="block";
+  setTimeout(function(){b.style.display="none";},3000);
 }
 function guardarEnDriveAhora(){
-  if(!accessToken) return Promise.resolve();
+  if(!accessToken)return Promise.resolve();
   syncBar("💾 Guardando...");
-  var datos = estadoParaDrive();
-  var p = driveFileId
-    ? actualizarArchivoDrive(driveFileId, datos)
-    : crearArchivoDrive(datos).then(function(id){ driveFileId = id; });
-  return p.then(function(){ syncBar("✅ Guardado"); }).catch(function(){ syncBar("⚠️ Error guardando","#b71c1c"); });
+  var datos=estadoParaDrive();
+  var p=driveFileId?actualizarArchivoDrive(driveFileId,datos):crearArchivoDrive(datos).then(function(id){driveFileId=id;});
+  return p.then(function(){syncBar("✅ Guardado");}).catch(function(){syncBar("⚠️ Error","#b71c1c");});
 }
-function save(){ clearTimeout(saveTimer); saveTimer = setTimeout(guardarEnDriveAhora, 2000); }
+function save(){clearTimeout(saveTimer);saveTimer=setTimeout(guardarEnDriveAhora,2000);}
 
 // ══ COTIZACIONES ══
 function fetchCotizaciones(){
+  var mepManual=localStorage.getItem("mep_manual");
+  if(mepManual&&parseFloat(mepManual)>100) cotiz.mep=parseFloat(mepManual);
   return fetch("https://dolarapi.com/v1/dolares/contadoconliqui")
-  .then(function(r){ return r.json(); })
-  .then(function(d){ if(d.venta && d.venta > 100) cotiz.ccl = d.venta; })
+  .then(function(r){return r.json();})
+  .then(function(d){if(d.venta&&d.venta>100)cotiz.ccl=d.venta;})
   .catch(function(){})
   .then(function(){
-    // Intentar obtener MEP real via proxy anti-CORS
+    // Intentar MEP real via proxy
     return fetch("https://api.allorigins.win/get?url="+encodeURIComponent("https://dolarapi.com/v1/dolares/bolsa"))
-    .then(function(r){ return r.json(); })
+    .then(function(r){return r.json();})
     .then(function(d){
-      var data = JSON.parse(d.contents);
-      if(data.venta && data.venta > 100){
-        cotiz.mep = data.venta;
-        localStorage.removeItem("mep_manual"); // limpiar manual si ya tenemos real
-      }
+      var data=JSON.parse(d.contents);
+      if(data.venta&&data.venta>100&&!localStorage.getItem("mep_manual")) cotiz.mep=data.venta;
     })
     .catch(function(){
-      // Fallback: MEP manual o CCL - 2%
-      var mepManual = localStorage.getItem("mep_manual");
-      cotiz.mep = (mepManual && parseFloat(mepManual) > 100)
-        ? parseFloat(mepManual)
-        : Math.round(cotiz.ccl * 0.98 * 100) / 100;
+      if(!mepManual||parseFloat(mepManual)<=100) cotiz.mep=Math.round(cotiz.ccl*0.98*100)/100;
     });
   })
   .then(function(){
-    document.getElementById("hd-ccl").textContent = "$"+fmt(cotiz.ccl);
-    document.getElementById("c-ccl").value = cotiz.ccl;
-    document.getElementById("v-ccl").value = cotiz.ccl;
+    document.getElementById("hd-ccl").textContent="$"+fmt(cotiz.ccl);
+    document.getElementById("c-ccl").value=cotiz.ccl;
+    document.getElementById("v-ccl").value=cotiz.ccl;
     actualizarMEPUI();
   });
 }
 
 // ══ PRECIOS ══
 function getARData(){
-  var now = Date.now();
-  if(_cacheAR && now - _cacheARts < 60000) return Promise.resolve(_cacheAR);
+  var now=Date.now();
+  if(_cacheAR&&now-_cacheARts<60000)return Promise.resolve(_cacheAR);
   return fetch("https://data912.com/live/arg_stocks")
-  .then(function(r){ return r.json(); })
-  .then(function(a){ _cacheAR = a; _cacheARts = Date.now(); return a; })
-  .catch(function(){ return []; });
+  .then(function(r){return r.json();}).then(function(a){_cacheAR=a;_cacheARts=Date.now();return a;}).catch(function(){return[];});
 }
 function fetchFinnhub(tk){
   return fetch("https://finnhub.io/api/v1/quote?symbol="+tk+"&token="+FINNHUB_KEY)
-  .then(function(r){ return r.json(); })
-  .then(function(d){ return d.c && d.c > 0 ? {precio:d.c, varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0, precioARS:null} : null; })
-  .catch(function(){ return null; });
+  .then(function(r){return r.json();})
+  .then(function(d){return d.c&&d.c>0?{precio:d.c,varHoy:d.pc>0?((d.c-d.pc)/d.pc*100):0,precioARS:null}:null;})
+  .catch(function(){return null;});
 }
 function fetchBono(tk){
-  var map = {AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
-  var sym = map[tk];
-  if(!sym) return Promise.resolve(null);
+  var map={AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
+  var sym=map[tk]; if(!sym)return Promise.resolve(null);
   return fetch("https://data912.com/live/arg_gov")
-  .then(function(r){ return r.json(); })
+  .then(function(r){return r.json();})
   .then(function(arr){
-    var b = arr.find(function(x){ return (x.ticker||x.symbol||"") === sym; });
-    if(b){ var p = parseFloat(b.c||b.price||b.last||0); if(p > 0) return {precio:p, varHoy:0, precioARS:null}; }
+    var b=arr.find(function(x){return(x.ticker||x.symbol||"")===sym;});
+    if(b){var p=parseFloat(b.c||b.price||b.last||0);if(p>0)return{precio:p,varHoy:0,precioARS:null};}
     return null;
-  }).catch(function(){ return null; });
+  }).catch(function(){return null;});
 }
-function fetchARfromData(tk, arr){
-  var item = arr.find(function(x){ return (x.ticker||x.symbol||"").toUpperCase() === tk.toUpperCase(); });
+function fetchARfromData(tk,arr){
+  var item=arr.find(function(x){return(x.ticker||x.symbol||"").toUpperCase()===tk.toUpperCase();});
   if(item){
-    var pARS = parseFloat(item.c||item.price||item.last||0);
-    if(pARS > 0){
-      var mep  = cotiz.mep > 100 ? cotiz.mep : 1150;
-      var prev = parseFloat(item.pclose||item.o||0);
-      return Promise.resolve({precio:pARS/mep, varHoy:prev>0?((pARS-prev)/prev*100):0, precioARS:pARS});
+    var pARS=parseFloat(item.c||item.price||item.last||0);
+    if(pARS>0){
+      var mep=cotiz.mep>100?cotiz.mep:1150;
+      var prev=parseFloat(item.pclose||item.o||0);
+      return Promise.resolve({precio:pARS/mep,varHoy:prev>0?((pARS-prev)/prev*100):0,precioARS:pARS});
     }
   }
   return Promise.resolve(null);
 }
 function getMercadoTicker(tk){
-  var pos = posiciones.find(function(p){ return p.ticker === tk; });
-  if(pos) return pos.tipo === "AR" ? "AR" : pos.tipo === "BONO" ? "BONO" : "NYSE";
-  var al  = alertas.find(function(a){ return a.ticker === tk && a.mercado; });
-  if(al)  return al.mercado;
-  var v   = resumenOps.find(function(x){ return x.ticker === tk; });
-  if(v)   return v.tipo === "ACCIONES" ? "AR" : "NYSE";
+  var pos=posiciones.find(function(p){return p.ticker===tk;});
+  if(pos)return pos.tipo==="AR"?"AR":pos.tipo==="BONO"?"BONO":"NYSE";
+  var al=alertas.find(function(a){return a.ticker===tk&&a.mercado;});
+  if(al)return al.mercado;
+  var v=resumenOps.find(function(x){return x.ticker===tk;});
+  if(v)return v.tipo==="ACCIONES"?"AR":"NYSE";
   return "NYSE";
 }
-function fetchPrecioUnico(tk, mercado){
-  if(mercado === "AR")   return getARData().then(function(a){ return fetchARfromData(tk, a); });
-  if(mercado === "BONO") return fetchBono(tk);
+function fetchPrecioUnico(tk,mercado){
+  if(mercado==="AR")return getARData().then(function(a){return fetchARfromData(tk,a);});
+  if(mercado==="BONO")return fetchBono(tk);
   return fetchFinnhub(tk);
 }
 function fetchPrecios(){
-  var tkPos = posiciones.filter(function(p){ return p.tipo !== "LIQUIDO"; }).map(function(p){ return p.ticker; });
-  var tkAl  = alertas.filter(function(a){ return a.activa && !a.disparada; }).map(function(a){ return a.ticker; });
-  var tks   = tkPos.concat(tkAl).filter(function(v,i,a){ return a.indexOf(v) === i; });
-  var arTks = tks.filter(function(tk){ return getMercadoTicker(tk) === "AR"; });
-  var prAR  = arTks.length > 0 ? getARData() : Promise.resolve([]);
+  var tkPos=posiciones.filter(function(p){return p.tipo!=="LIQUIDO";}).map(function(p){return p.ticker;});
+  var tkAl=alertas.filter(function(a){return a.activa&&!a.disparada;}).map(function(a){return a.ticker;});
+  var tks=tkPos.concat(tkAl).filter(function(v,i,a){return a.indexOf(v)===i;});
+  var arTks=tks.filter(function(tk){return getMercadoTicker(tk)==="AR";});
+  var prAR=arTks.length>0?getARData():Promise.resolve([]);
   return prAR.then(function(arData){
     return Promise.all(tks.map(function(tk){
-      var m    = getMercadoTicker(tk);
-      var prom = m === "AR" ? fetchARfromData(tk,arData) : m === "BONO" ? fetchBono(tk) : fetchFinnhub(tk);
+      var m=getMercadoTicker(tk);
+      var prom=m==="AR"?fetchARfromData(tk,arData):m==="BONO"?fetchBono(tk):fetchFinnhub(tk);
       return prom.then(function(r){
-        var pos = posiciones.find(function(p){ return p.ticker === tk; });
-        if(r) precios[tk] = r;
-        else if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
+        var pos=posiciones.find(function(p){return p.ticker===tk;});
+        if(r)precios[tk]=r;
+        else if(!precios[tk])precios[tk]={precio:pos?pos.ppc:0,varHoy:0,precioARS:null};
       });
     }));
-  }).then(function(){ checkAlertas(); });
+  }).then(function(){checkAlertas();});
+}
+
+// ══ UTILS ══
+function fmt(n,d){d=d===undefined?0:d;return Number(n).toLocaleString("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fU(n){return "USD "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fARS(n){return "$"+Number(n).toLocaleString("es-AR",{minimumFractionDigits:0,maximumFractionDigits:0});}
+function pct(n){return(n>=0?"+":"")+Number(n).toFixed(2)+"%";}
+function clr(n){return n>=0?"pos":"neg";}
+function hoy(){return new Date().toISOString().split("T")[0];}
+function mc(label,val,sub,cls){return '<div class="mc"><div class="mc-label">'+label+'</div><div class="mc-val '+(cls||"neu")+'">'+val+'</div>'+(sub?'<div class="mc-sub">'+sub+'</div>':'')+'</div>';}
+function getPosData(){
+  return posiciones.filter(function(p){return p.tipo!=="LIQUIDO";}).map(function(pos){
+    var pr=precios[pos.ticker]||{precio:pos.ppc,varHoy:0,precioARS:null};
+    var gpPct=pos.ppc>0?((pr.precio-pos.ppc)/pos.ppc)*100:0;
+    return Object.assign({},pos,{precioUSD:pr.precio,varHoy:pr.varHoy,precioARS:pr.precioARS,gpPct:gpPct,gpUSD:(pr.precio-pos.ppc)*pos.cantidad,total:pr.precio*pos.cantidad});
+  });
+}
+function getLiq(){
+  return posiciones.filter(function(p){return p.tipo==="LIQUIDO";}).map(function(p){return Object.assign({},p,{total:p.ppc*p.cantidad,gpPct:0,gpUSD:0});});
 }
 
 // ══ ALERTAS ══
-function pedirPermisoNotificaciones(){
-  if(!("Notification" in window)) return;
-  if(Notification.permission === "default") Notification.requestPermission();
-}
-function notificarAlerta(a, pr){
-  var msg = "🔔 "+a.tipo+" "+a.ticker+": precio "+fU(pr)+" (objetivo "+fU(a.precio)+")";
-  if(Notification.permission === "granted"){
-    try{ new Notification("🔔 Alerta "+a.tipo+": "+a.ticker,{body:msg,requireInteraction:true}); } catch(e){}
-  }
-  setTimeout(function(){ alert("⚡ ALERTA DISPARADA\n\n"+msg+(a.nota?"\nNota: "+a.nota:"")); }, 100);
-  syncBar("🔔 "+msg, "#e65100");
+function pedirPermisoNotificaciones(){if(!("Notification"in window))return;if(Notification.permission==="default")Notification.requestPermission();}
+function notificarAlerta(a,pr){
+  var msg="🔔 "+a.tipo+" "+a.ticker+": precio "+fU(pr)+" (objetivo "+fU(a.precio)+")";
+  if(Notification.permission==="granted"){try{new Notification("🔔 Alerta "+a.tipo+": "+a.ticker,{body:msg,requireInteraction:true});}catch(e){}}
+  setTimeout(function(){alert("⚡ ALERTA DISPARADA\n\n"+msg+(a.nota?"\nNota: "+a.nota:""));},100);
+  syncBar("🔔 "+msg,"#e65100");
 }
 function checkAlertas(){
-  if(!alertas || alertas.length === 0) return;
-  var cambio = false;
+  if(!alertas||alertas.length===0)return;
+  var cambio=false;
   alertas.forEach(function(a){
-    if(!a.activa || a.disparada) return;
-    var obj = precios[a.ticker];
-    if(!obj || !obj.precio || isNaN(obj.precio) || obj.precio <= 0) return;
-    var pr = obj.precio;
-    if((a.tipo === "COMPRA" && pr <= a.precio) || (a.tipo === "VENTA" && pr >= a.precio)){
-      a.disparada = true; a.activa = false;
-      a.fechaDisparada  = new Date().toLocaleString("es-AR");
-      a.precioDisparado = pr;
-      cambio = true;
-      notificarAlerta(a, pr);
+    if(!a.activa||a.disparada)return;
+    var obj=precios[a.ticker];
+    if(!obj||!obj.precio||isNaN(obj.precio)||obj.precio<=0)return;
+    var pr=obj.precio;
+    if((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio)){
+      a.disparada=true;a.activa=false;a.fechaDisparada=new Date().toLocaleString("es-AR");a.precioDisparado=pr;
+      cambio=true;notificarAlerta(a,pr);
     }
   });
-  if(cambio){ save(); renderAlertas(); }
+  if(cambio){save();renderAlertas();}
 }
 function refrescarPreciosAlertas(){
-  syncBar("🔄 Actualizando precios de alertas...","#1565c0");
-  var tkAl = alertas.filter(function(a){ return a.activa && !a.disparada; }).map(function(a){ return a.ticker; });
-  tkAl     = tkAl.filter(function(v,i,a){ return a.indexOf(v) === i; });
-  if(tkAl.length === 0){ syncBar("Sin alertas activas","#888"); return; }
-  var arTks = tkAl.filter(function(tk){ return getMercadoTicker(tk) === "AR"; });
-  var prAR  = arTks.length > 0 ? getARData() : Promise.resolve([]);
+  syncBar("🔄 Actualizando...","#1565c0");
+  var tkAl=alertas.filter(function(a){return a.activa&&!a.disparada;}).map(function(a){return a.ticker;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+  if(tkAl.length===0){syncBar("Sin alertas activas","#888");return;}
+  var arTks=tkAl.filter(function(tk){return getMercadoTicker(tk)==="AR";});
+  var prAR=arTks.length>0?getARData():Promise.resolve([]);
   prAR.then(function(arData){
     return Promise.all(tkAl.map(function(tk){
-      var m = getMercadoTicker(tk);
-      return (m==="AR"?fetchARfromData(tk,arData):m==="BONO"?fetchBono(tk):fetchFinnhub(tk))
-             .then(function(r){ if(r) precios[tk] = r; });
+      var m=getMercadoTicker(tk);
+      return(m==="AR"?fetchARfromData(tk,arData):m==="BONO"?fetchBono(tk):fetchFinnhub(tk)).then(function(r){if(r)precios[tk]=r;});
     }));
-  }).then(function(){ syncBar("✅ Precios actualizados","#1e7e34"); checkAlertas(); renderAlertas(); });
+  }).then(function(){syncBar("✅ Precios actualizados","#1e7e34");checkAlertas();renderAlertas();});
 }
 function renderAlertas(){
-  var compras = alertas.filter(function(a){ return a.tipo === "COMPRA"; });
-  var ventas  = alertas.filter(function(a){ return a.tipo === "VENTA";  });
+  var compras=alertas.filter(function(a){return a.tipo==="COMPRA";});
+  var ventas=alertas.filter(function(a){return a.tipo==="VENTA";});
   function aCard(a){
-    var idx       = alertas.indexOf(a);
-    var obj       = precios[a.ticker];
-    var pr        = obj && obj.precio && !isNaN(obj.precio) && obj.precio > 0 ? obj.precio : null;
-    var triggered = pr !== null && a.activa && ((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
-    var status    = !a.activa ? "inactive" : triggered ? "triggered" : "active";
-    var statusLbl = {inactive:"Pausada",triggered:"¡Disparada!",active:"Activa"}[status];
-    var mBadge    = a.mercado ? '<span class="alert-badge">'+a.mercado+'</span>' : "";
-    var precioBloque = "";
-    if(pr !== null){
-      var distPct = (pr - a.precio) / a.precio * 100;
-      var falta   = Math.abs(pr - a.precio);
-      var cerca   = Math.abs(distPct) < 5;
-      var msg = a.tipo === "COMPRA"
-        ? (pr <= a.precio ? "✅ ¡DISPARADA!" : "📉 Falta bajar "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)")
-        : (pr >= a.precio ? "✅ ¡DISPARADA!" : "📈 Falta subir " +fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
-      precioBloque = '<div class="alert-prices">'+
-        '<span class="alert-actual">Actual: '+fU(pr)+'</span>'+
-        '<span class="alert-objetivo">→ Obj: '+fU(a.precio)+'</span>'+
-        '<span class="alert-distancia'+(triggered?" ok":cerca?" cerca":"")+'">'+msg+'</span>'+
-      '</div>';
-    } else {
-      precioBloque = '<div style="font-size:10px;color:#e65100;margin-bottom:5px">⚠️ Sin precio — tocá ↻ Actualizar</div>';
+    var idx=alertas.indexOf(a);
+    var obj=precios[a.ticker];
+    var pr=obj&&obj.precio&&!isNaN(obj.precio)&&obj.precio>0?obj.precio:null;
+    var triggered=pr!==null&&a.activa&&((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
+    var status=!a.activa?"inactive":triggered?"triggered":"active";
+    var statusLbl={inactive:"Pausada",triggered:"¡Disparada!",active:"Activa"}[status];
+    var mBadge=a.mercado?'<span class="alert-badge">'+a.mercado+'</span>':"";
+    var precioBloque="";
+    if(pr!==null){
+      var distPct=(pr-a.precio)/a.precio*100;
+      var falta=Math.abs(pr-a.precio);
+      var cerca=Math.abs(distPct)<5;
+      var msg=a.tipo==="COMPRA"?(pr<=a.precio?"✅ ¡DISPARADA!":"📉 Falta bajar "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)"):(pr>=a.precio?"✅ ¡DISPARADA!":"📈 Falta subir "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
+      precioBloque='<div class="alert-prices"><span class="alert-actual">Actual: '+fU(pr)+'</span><span class="alert-objetivo">→ Obj: '+fU(a.precio)+'</span><span class="alert-distancia'+(triggered?" ok":cerca?" cerca":"")+'">'+msg+'</span></div>';
+    }else{
+      precioBloque='<div style="font-size:10px;color:#e65100;margin-bottom:5px">⚠️ Sin precio — tocá ↻ Actualizar</div>';
     }
     return '<div class="alert-card'+(triggered?" triggered":!a.activa?" inactive":"")+'">'+
-      '<div class="alert-header">'+
-        '<div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+' '+(a.activa?"":"off")+'"></div>'+
-        '<span class="alert-ticker">'+a.ticker+'</span>'+mBadge+
-        '<span class="alert-status '+status+'">'+statusLbl+'</span>'+
-      '</div>'+
+      '<div class="alert-header"><div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+' '+(a.activa?"":"off")+'"></div>'+
+      '<span class="alert-ticker">'+a.ticker+'</span>'+mBadge+
+      '<span class="alert-status '+status+'">'+statusLbl+'</span></div>'+
       precioBloque+
       (a.nota?'<div style="font-size:10px;color:#888;margin-bottom:5px">📝 '+a.nota+'</div>':"")+
       '<div class="alert-actions">'+
@@ -890,256 +861,182 @@ function renderAlertas(){
         '<button class="del-btn" onclick="elimAlerta('+idx+')" style="color:#b71c1c;border-color:#b71c1c">🗑 Eliminar</button>'+
       '</div></div>';
   }
-  function fill(arr, max){
-    var h = arr.map(aCard).join("");
-    for(var i = arr.length; i < max; i++)
-      h += '<div style="padding:8px 10px;font-size:11px;color:#ccc;border:.5px dashed #e8e8e8;border-radius:8px;margin-bottom:6px;text-align:center">Alerta '+(i+1)+' disponible</div>';
+  function fill(arr,max){
+    var h=arr.map(aCard).join("");
+    for(var i=arr.length;i<max;i++)h+='<div style="padding:8px 10px;font-size:11px;color:#ccc;border:.5px dashed #e8e8e8;border-radius:8px;margin-bottom:6px;text-align:center">Alerta '+(i+1)+' disponible</div>';
     return h;
   }
-  document.getElementById("alertas-compra").innerHTML = fill(compras, 15);
-  document.getElementById("alertas-venta").innerHTML  = fill(ventas,  15);
-  var disp = alertas.filter(function(a){
-    var obj = precios[a.ticker]; var pr = obj ? obj.precio : null;
-    return pr && a.activa && ((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));
-  });
-  document.getElementById("alertas-triggered").innerHTML = disp.length
-    ? '<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;border:.5px solid #ffcc02;font-size:12px;margin-bottom:4px">🔔 <strong>'+disp.length+' alerta(s):</strong> '+disp.map(function(a){ return a.ticker+" "+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio); }).join(" · ")+'</div>'
-    : "";
-  var hist = alertas.filter(function(a){ return a.disparada; });
-  document.getElementById("alertas-hist").innerHTML = hist.length
-    ? hist.map(function(a){
-        return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f5f5f5">'+
-          '<div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+'"></div>'+
-          '<span style="font-weight:700;font-size:12px;min-width:50px">'+a.ticker+'</span>'+
-          '<span style="font-size:12px;flex:1">'+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio)+
-            (a.precioDisparado?' <span style="color:#1e7e34;font-weight:700">(en '+fU(a.precioDisparado)+')</span>':"")+
-          '</span>'+
-          '<span style="font-size:10px;color:#888">'+(a.fechaDisparada||"")+'</span>'+
-          '<button class="del-btn" onclick="reactivarAlerta('+alertas.indexOf(a)+')">↺</button>'+
-        '</div>';
-      }).join("")
-    : '<div class="empty-state">Ninguna disparada aún</div>';
+  document.getElementById("alertas-compra").innerHTML=fill(compras,15);
+  document.getElementById("alertas-venta").innerHTML=fill(ventas,15);
+  var disp=alertas.filter(function(a){var obj=precios[a.ticker];var pr=obj?obj.precio:null;return pr&&a.activa&&((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio));});
+  document.getElementById("alertas-triggered").innerHTML=disp.length?'<div style="background:#fff3e0;border-radius:8px;padding:10px 12px;border:.5px solid #ffcc02;font-size:12px;margin-bottom:4px">🔔 <strong>'+disp.length+' alerta(s):</strong> '+disp.map(function(a){return a.ticker+" "+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio);}).join(" · ")+'</div>':"";
+  var hist=alertas.filter(function(a){return a.disparada;});
+  document.getElementById("alertas-hist").innerHTML=hist.length?hist.map(function(a){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:.5px solid #f5f5f5">'+
+      '<div class="alert-dot '+(a.tipo==="COMPRA"?"buy":"sell")+'"></div>'+
+      '<span style="font-weight:700;font-size:12px;min-width:50px">'+a.ticker+'</span>'+
+      '<span style="font-size:12px;flex:1">'+(a.tipo==="COMPRA"?"≤":"≥")+" "+fU(a.precio)+(a.precioDisparado?' <span style="color:#1e7e34;font-weight:700">(en '+fU(a.precioDisparado)+')</span>':"")+
+      '</span><span style="font-size:10px;color:#888">'+(a.fechaDisparada||"")+'</span>'+
+      '<button class="del-btn" onclick="reactivarAlerta('+alertas.indexOf(a)+')">↺</button></div>';
+  }).join(""):'<div class="empty-state">Ninguna disparada aún</div>';
 }
 function showAlertaForm(tipo){
-  document.getElementById("alerta-form").style.display = "block";
-  document.getElementById("al-tipo").value = tipo;
-  document.getElementById("alerta-form-title").textContent = "Nueva alerta de "+(tipo==="COMPRA"?"🟢 COMPRA":"🔴 VENTA");
+  document.getElementById("alerta-form").style.display="block";
+  document.getElementById("al-tipo").value=tipo;
+  document.getElementById("alerta-form-title").textContent="Nueva alerta de "+(tipo==="COMPRA"?"🟢 COMPRA":"🔴 VENTA");
   onChangeMercadoAlerta();
 }
 function onChangeMercadoAlerta(){
-  var m = document.getElementById("al-mercado").value;
-  var hints = {NYSE:"Finnhub — precio USD. Ej: KO, CAT, EWZ, VIST", AR:"data912/BYMA — ARS÷MEP. Ej: GGAL, YPFD", BONO:"data912 — USD. Ej: AL35, GD35, AE38"};
-  document.getElementById("al-mercado-hint").textContent = hints[m] || "";
-  document.getElementById("al-precio-label").textContent = m === "AR" ? "Precio objetivo USD (≈ARS÷MEP)" : "Precio objetivo USD";
+  var m=document.getElementById("al-mercado").value;
+  var hints={NYSE:"Finnhub — precio USD. Ej: KO, CAT, EWZ",AR:"data912/BYMA — ARS÷MEP. Ej: GGAL, YPFD",BONO:"data912 — USD. Ej: AL35, GD35"};
+  document.getElementById("al-mercado-hint").textContent=hints[m]||"";
+  document.getElementById("al-precio-label").textContent=m==="AR"?"Precio objetivo USD (≈ARS÷MEP)":"Precio objetivo USD";
 }
 function guardarAlerta(){
-  var ticker  = document.getElementById("al-ticker").value.trim().toUpperCase();
-  var precio  = parseFloat(document.getElementById("al-precio").value);
-  var tipo    = document.getElementById("al-tipo").value;
-  var mercado = document.getElementById("al-mercado").value;
-  var nota    = document.getElementById("al-nota").value.trim();
-  if(!ticker || isNaN(precio) || precio <= 0){ alert("Completá ticker y precio."); return; }
-  if(alertas.filter(function(a){ return a.tipo === tipo; }).length >= 15){ alert("Máximo 15 alertas por tipo."); return; }
-  alertas.push({ticker:ticker, precio:precio, tipo:tipo, mercado:mercado, nota:nota, activa:true, creada:hoy(), disparada:false, fechaDisparada:null, precioDisparado:null});
+  var ticker=document.getElementById("al-ticker").value.trim().toUpperCase();
+  var precio=parseFloat(document.getElementById("al-precio").value);
+  var tipo=document.getElementById("al-tipo").value;
+  var mercado=document.getElementById("al-mercado").value;
+  var nota=document.getElementById("al-nota").value.trim();
+  if(!ticker||isNaN(precio)||precio<=0){alert("Completá ticker y precio.");return;}
+  if(alertas.filter(function(a){return a.tipo===tipo;}).length>=15){alert("Máximo 15 alertas por tipo.");return;}
+  alertas.push({ticker:ticker,precio:precio,tipo:tipo,mercado:mercado,nota:nota,activa:true,creada:hoy(),disparada:false,fechaDisparada:null,precioDisparado:null});
   save();
-  document.getElementById("alerta-form").style.display = "none";
-  ["al-ticker","al-precio","al-nota"].forEach(function(id){ document.getElementById(id).value = ""; });
+  document.getElementById("alerta-form").style.display="none";
+  ["al-ticker","al-precio","al-nota"].forEach(function(id){document.getElementById(id).value="";});
   pedirPermisoNotificaciones();
-  fetchPrecioUnico(ticker, mercado).then(function(r){ if(r) precios[ticker] = r; renderAlertas(); });
+  fetchPrecioUnico(ticker,mercado).then(function(r){if(r)precios[ticker]=r;renderAlertas();});
 }
-function toggleAlerta(i){ alertas[i].activa = !alertas[i].activa; if(alertas[i].activa) alertas[i].disparada = false; save(); renderAlertas(); }
-function elimAlerta(i){ if(!confirm("¿Eliminar alerta?")) return; alertas.splice(i,1); save(); renderAlertas(); }
-function reactivarAlerta(i){ alertas[i].disparada=false; alertas[i].activa=true; alertas[i].fechaDisparada=null; alertas[i].precioDisparado=null; save(); renderAlertas(); }
-
-// ══ UTILS ══
-function fmt(n,d){ d = d===undefined?0:d; return Number(n).toLocaleString("es-AR",{minimumFractionDigits:d,maximumFractionDigits:d}); }
-function fU(n){ return "USD "+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fARS(n){ return "$"+Number(n).toLocaleString("es-AR",{minimumFractionDigits:0,maximumFractionDigits:0}); }
-function pct(n){ return (n>=0?"+":"")+Number(n).toFixed(2)+"%"; }
-function clr(n){ return n>=0?"pos":"neg"; }
-function hoy(){ return new Date().toISOString().split("T")[0]; }
-function mc(label,val,sub,cls){ return '<div class="mc"><div class="mc-label">'+label+'</div><div class="mc-val '+(cls||"neu")+'">'+val+'</div>'+(sub?'<div class="mc-sub">'+sub+'</div>':'')+'</div>'; }
-function getPosData(){
-  return posiciones.filter(function(p){ return p.tipo !== "LIQUIDO"; }).map(function(pos){
-    var pr = precios[pos.ticker] || {precio:pos.ppc, varHoy:0, precioARS:null};
-    var gpPct = pos.ppc > 0 ? ((pr.precio - pos.ppc) / pos.ppc) * 100 : 0;
-    return Object.assign({}, pos, {precioUSD:pr.precio, varHoy:pr.varHoy, precioARS:pr.precioARS, gpPct:gpPct, gpUSD:(pr.precio-pos.ppc)*pos.cantidad, total:pr.precio*pos.cantidad});
-  });
-}
-function calcularLiquidoUSD(){
-  var tI = flujos.reduce(function(s,f){ return s+(f.ingresoUSD||0); },0);
-  var tE = flujos.reduce(function(s,f){ return s+Math.abs(f.egresoUSD||0); },0);
-  var neto = tI - tE;
-  // Restar capital de compras nuevas (las que están en extraPos con _compras)
-  var gastoCompras = extraPos.reduce(function(s,ep){
-    if(ep._compras && ep._compras > 0){
-      var base = POS_INIT.find(function(p){ return p.ticker===ep.ticker; });
-      var cantExtra = base ? ep.cantidad - base.cantidad : ep.cantidad;
-      var ppcExtra  = ep.ppc;
-      if(cantExtra > 0) s += cantExtra * ppcExtra;
-    }
-    return s;
-  },0);
-  // Sumar ingresos de ventas nuevas
-  var ingVentas = extraVentas.reduce(function(s,v){ return s+(v.cant*v.pv); },0);
-  // Ajuste manual
-  var ajuste = parseFloat(localStorage.getItem("liquido_ajuste")||"0");
-  return Math.max(0, neto - gastoCompras + ingVentas + ajuste);
-}
-
-function getLiq(){
-  var liquidoUSD = calcularLiquidoUSD();
-  var fciUSD     = parseFloat(localStorage.getItem("fci_usd")||"0");
-  var items = [];
-  items.push({ticker:"LIQUIDO", nombre:"Efectivo USD", tipo:"LIQUIDO", sector:"LIQUIDO", cantidad:1, ppc:liquidoUSD, total:liquidoUSD, gpPct:0, gpUSD:0});
-  if(fciUSD > 0){
-    items.push({ticker:"FCI $", nombre:"FCI Pesos", tipo:"LIQUIDO", sector:"LIQUIDO", cantidad:1, ppc:fciUSD, total:fciUSD, gpPct:0, gpUSD:0});
-  }
-  return items;
-}
+function toggleAlerta(i){alertas[i].activa=!alertas[i].activa;if(alertas[i].activa)alertas[i].disparada=false;save();renderAlertas();}
+function elimAlerta(i){if(!confirm("¿Eliminar alerta?"))return;alertas.splice(i,1);save();renderAlertas();}
+function reactivarAlerta(i){alertas[i].disparada=false;alertas[i].activa=true;alertas[i].fechaDisparada=null;alertas[i].precioDisparado=null;save();renderAlertas();}
 
 // ══ SECTOR VIEW ══
 function renderSectorView(){
-  var sector = document.getElementById("dash-sector").value;
-  var view   = document.getElementById("sector-view");
-  var empty  = document.getElementById("sector-empty");
-  if(!sector){ view.style.display="none"; empty.style.display="block"; return; }
-  view.style.display = "block"; empty.style.display = "none";
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
-  var items = sector === "LIQUIDO" ? liq : dat.filter(function(d){ return d.sector === sector; });
-  var totalSector   = items.reduce(function(s,d){return s+d.total;},0);
-  var capitalInvert = items.reduce(function(s,d){return s+(d.ppc||0)*(d.cantidad||0);},0);
-  var gpSector      = items.reduce(function(s,d){return s+(d.gpUSD||0);},0);
-  var gpPctSector   = capitalInvert > 0 ? gpSector/capitalInvert*100 : 0;
-  var pondCartera   = grand > 0 ? totalSector/grand*100 : 0;
-  document.getElementById("sector-metrics").innerHTML =
-    mc("Sector", sector, items.length+" posiciones","neu")+
-    mc("Total USD", fU(totalSector), fmt(pondCartera,1)+"% de cartera","neu")+
-    mc("Capital invertido", fU(capitalInvert),"","neu")+
+  var sector=document.getElementById("dash-sector").value;
+  var view=document.getElementById("sector-view");
+  var empty=document.getElementById("sector-empty");
+  if(!sector){view.style.display="none";empty.style.display="block";return;}
+  view.style.display="block";empty.style.display="none";
+  var dat=getPosData(),liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
+  var items=sector==="LIQUIDO"?liq:dat.filter(function(d){return d.sector===sector;});
+  var totalSector=items.reduce(function(s,d){return s+d.total;},0);
+  var capitalInvert=items.reduce(function(s,d){return s+(d.ppc||0)*(d.cantidad||0);},0);
+  var gpSector=items.reduce(function(s,d){return s+(d.gpUSD||0);},0);
+  var gpPctSector=capitalInvert>0?gpSector/capitalInvert*100:0;
+  var pondCartera=grand>0?totalSector/grand*100:0;
+  document.getElementById("sector-metrics").innerHTML=
+    mc("Sector",sector,items.length+" posiciones","neu")+
+    mc("Total USD",fU(totalSector),fmt(pondCartera,1)+"% de cartera","neu")+
+    mc("Capital invertido",fU(capitalInvert),"","neu")+
     mc("G/P no realizada",(gpSector>=0?"+":"")+fU(gpSector),pct(gpPctSector),clr(gpSector));
-  var sorted = items.slice().sort(function(a,b){ return b.total - a.total; });
-  document.getElementById("tb-sector").innerHTML = sorted.length ? sorted.map(function(d){
-    var pondS = totalSector > 0 ? d.total/totalSector*100 : 0;
-    var pondC = grand > 0       ? d.total/grand*100        : 0;
-    var gpP   = d.gpPct  != null && sector !== "LIQUIDO" ? pct(d.gpPct)                   : "-";
-    var gpU   = d.gpUSD  != null && sector !== "LIQUIDO" ? (d.gpUSD>=0?"+":"")+fU(d.gpUSD) : "-";
-    var gcls  = d.gpUSD  != null && sector !== "LIQUIDO" ? clr(d.gpUSD)                    : "";
-    var tipo  = d.tipo === "CEDEAR" ? "b-nyse" : d.tipo === "AR" ? "b-ar" : d.tipo === "BONO" ? "b-bono" : "b-liq";
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span></td>'+
+  var sorted=items.slice().sort(function(a,b){return b.total-a.total;});
+  document.getElementById("tb-sector").innerHTML=sorted.length?sorted.map(function(d){
+    var pondS=totalSector>0?d.total/totalSector*100:0;
+    var pondC=grand>0?d.total/grand*100:0;
+    var esLiq=sector==="LIQUIDO";
+    var gpP=!esLiq?pct(d.gpPct):"-";
+    var gpU=!esLiq?(d.gpUSD>=0?"+":"")+fU(d.gpUSD):"-";
+    var gcls=!esLiq?clr(d.gpUSD):"neu";
+    var tipo=d.tipo==="CEDEAR"?"b-nyse":d.tipo==="AR"?"b-ar":d.tipo==="BONO"?"b-bono":"b-liq";
+    return '<tr><td><span class="tkr">'+d.ticker+'</span></td>'+
       '<td style="font-size:11px;color:#555">'+d.nombre+'</td>'+
       '<td><span class="badge '+tipo+'">'+d.tipo+'</span></td>'+
-      '<td>'+fmt(d.cantidad, d.cantidad%1===0?0:2)+'</td>'+
+      '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
       '<td>'+fU(d.ppc)+'</td>'+
       '<td><strong>'+fU(d.precioUSD||d.ppc)+'</strong></td>'+
-      '<td class="'+(gcls||"neu")+'">'+gpP+'</td>'+
-      '<td class="'+(gcls||"neu")+'">'+gpU+'</td>'+
+      '<td class="'+gcls+'">'+gpP+'</td>'+
+      '<td class="'+gcls+'">'+gpU+'</td>'+
       '<td>'+fU(d.total)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:6px">'+
         '<div style="background:#f0f0f0;border-radius:3px;height:6px;width:60px;overflow:hidden">'+
           '<div style="width:'+Math.min(pondS,100)+'%;height:6px;background:#1a1a2e;border-radius:3px"></div></div>'+
         '<span style="font-size:11px;font-weight:600">'+fmt(pondS,1)+'%</span></div></td>'+
       '<td style="font-size:11px;color:#888">'+fmt(pondC,1)+'%</td></tr>';
-  }).join("") : '<tr><td colspan="11" class="empty-state">Sin posiciones en '+sector+'</td></tr>';
+  }).join(""):'<tr><td colspan="11" class="empty-state">Sin posiciones en '+sector+'</td></tr>';
 }
 
 // ══ DASHBOARD ══
 function renderDashboard(){
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var liqT  = liq.reduce(function(s,l){return s+l.total;},0);
-  var posT  = dat.reduce(function(s,d){return s+d.total;},0);
-  var posC  = dat.reduce(function(s,d){return s+d.ppc*d.cantidad;},0);
-  var grand = posT + liqT;
-  var pnl   = posT - posC, pnlPct = posC > 0 ? pnl/posC*100 : 0;
-  var srt   = dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
-  var best  = srt[0]            || {ticker:"-",gpPct:0,gpUSD:0};
-  var worst = srt[srt.length-1] || {ticker:"-",gpPct:0,gpUSD:0};
-  var realizado = resumenOps.reduce(function(s,o){return s+(o.gp||0);},0);
-  var nC = BASE_COMPRAS + extraPos.reduce(function(s,e){return s+(e._compras||0);},0);
-  var nV = BASE_VENTAS  + extraVentas.length;
-  document.getElementById("dash-metrics").innerHTML =
+  var dat=getPosData(),liq=getLiq();
+  var liqT=liq.reduce(function(s,l){return s+l.total;},0);
+  var posT=dat.reduce(function(s,d){return s+d.total;},0);
+  var posC=dat.reduce(function(s,d){return s+d.ppc*d.cantidad;},0);
+  var grand=posT+liqT,pnl=posT-posC,pnlPct=posC>0?pnl/posC*100:0;
+  var srt=dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
+  var best=srt[0]||{ticker:"-",gpPct:0,gpUSD:0},worst=srt[srt.length-1]||{ticker:"-",gpPct:0,gpUSD:0};
+  var realizado=resumenOps.reduce(function(s,o){return s+(o.gp||0);},0);
+  var nC=BASE_COMPRAS+extraPos.reduce(function(s,e){return s+(e._compras||0);},0);
+  var nV=BASE_VENTAS+extraVentas.length;
+  document.getElementById("dash-metrics").innerHTML=
     mc("Cartera total",fU(grand),fU(posT)+" en activos","neu")+
     mc("G/P no realizada",(pnl>=0?"+":"")+fU(pnl),pct(pnlPct),clr(pnl))+
     mc("Mejor posición",pct(best.gpPct),best.ticker,"pos")+
     mc("Peor posición",pct(worst.gpPct),worst.ticker,"neg")+
     mc("CCL / MEP","$"+fmt(cotiz.ccl),"MEP $"+fmt(cotiz.mep),"neu")+
     mc("Operaciones","🟢 "+nC+" compras","🔴 "+nV+" ventas","neu");
-  if(document.getElementById("dash-sector").value) renderSectorView();
-  // Barras composición
+  if(document.getElementById("dash-sector").value)renderSectorView();
   var tipos=["CEDEAR","AR","BONO","LIQUIDO"],tiL=["CEDEARs","Acc.AR","Bonos","Líquido"],tiC=["#e65100","#1565c0","#2e7d32","#546e7a"];
-  var tiT = tipos.map(function(t){ return t==="LIQUIDO"?liqT:dat.filter(function(d){return d.tipo===t;}).reduce(function(s,d){return s+d.total;},0); });
-  document.getElementById("bar-comp").innerHTML = tipos.map(function(t,i){
-    var p = grand > 0 ? tiT[i]/grand*100 : 0;
-    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
-      '<span style="font-weight:600">'+tiL[i]+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(tiT[i])+'</span></div>'+
+  var tiT=tipos.map(function(t){return t==="LIQUIDO"?liqT:dat.filter(function(d){return d.tipo===t;}).reduce(function(s,d){return s+d.total;},0);});
+  document.getElementById("bar-comp").innerHTML=tipos.map(function(t,i){
+    var p=grand>0?tiT[i]/grand*100:0;
+    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="font-weight:600">'+tiL[i]+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(tiT[i])+'</span></div>'+
       '<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden"><div style="width:'+Math.min(p,100)+'%;height:10px;border-radius:4px;background:'+tiC[i]+'"></div></div></div>';
   }).join("");
-  // Barras sector
-  var secs = dat.map(function(d){return d.sector;}).filter(function(v,i,a){return a.indexOf(v)===i;});
-  var secC = ["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e"];
-  var secSort = secs.map(function(s,i){return{s:s,t:dat.filter(function(d){return d.sector===s;}).reduce(function(a,d){return a+d.total;},0),c:secC[i%secC.length]};}).sort(function(a,b){return b.t-a.t;});
-  document.getElementById("bar-sec").innerHTML = secSort.map(function(item){
-    var p = posT > 0 ? item.t/posT*100 : 0;
-    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">'+
-      '<span style="font-weight:600">'+item.s+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(item.t)+'</span></div>'+
+  var secs=dat.map(function(d){return d.sector;}).filter(function(v,i,a){return a.indexOf(v)===i;});
+  var secC=["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e"];
+  var secSort=secs.map(function(s,i){return{s:s,t:dat.filter(function(d){return d.sector===s;}).reduce(function(a,d){return a+d.total;},0),c:secC[i%secC.length]};}).sort(function(a,b){return b.t-a.t;});
+  document.getElementById("bar-sec").innerHTML=secSort.map(function(item){
+    var p=posT>0?item.t/posT*100:0;
+    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="font-weight:600">'+item.s+'</span><span style="color:#555">'+fmt(p,1)+'% · '+fU(item.t)+'</span></div>'+
       '<div style="background:#f0f0f0;border-radius:4px;height:10px;overflow:hidden"><div style="width:'+Math.min(p,100)+'%;height:10px;border-radius:4px;background:'+item.c+'"></div></div></div>';
   }).join("");
-  // % por instrumento
-  var all  = dat.concat(liq).sort(function(a,b){return b.total-a.total;});
-  var cols = ["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e","#1565c0","#6a1b9a","#2e7d32","#bf360c","#880e4f","#00695c"];
-  document.getElementById("pct-grid").innerHTML = all.map(function(d,i){
-    var p = grand > 0 ? d.total/grand*100 : 0;
+  var all=dat.concat(liq).sort(function(a,b){return b.total-a.total;});
+  var cols=["#0d47a1","#4a148c","#1b5e20","#e65100","#b71c1c","#006064","#33691e","#37474f","#827717","#4e342e","#1565c0","#6a1b9a","#2e7d32","#bf360c","#880e4f","#00695c"];
+  document.getElementById("pct-grid").innerHTML=all.map(function(d,i){
+    var p=grand>0?d.total/grand*100:0;
     return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid #f5f5f5">'+
       '<span style="font-weight:700;font-size:12px;min-width:52px">'+d.ticker+'</span>'+
       '<div class="perf-bar-wrap"><div class="perf-bar" style="width:'+Math.min(p*4,100)+'%;background:'+cols[i%cols.length]+'"></div></div>'+
       '<span style="font-size:12px;font-weight:600;min-width:36px;text-align:right">'+fmt(p,1)+'%</span>'+
       '<span style="font-size:11px;color:#888;min-width:88px;text-align:right">'+fU(d.total)+'</span></div>';
   }).join("");
-  document.getElementById("w-best").textContent   = best.ticker;
-  document.getElementById("w-best-p").textContent  = pct(best.gpPct)+" · "+fU(best.gpUSD);
-  document.getElementById("w-worst").textContent   = worst.ticker;
-  document.getElementById("w-worst-p").textContent = pct(worst.gpPct)+" · "+fU(worst.gpUSD);
-  document.getElementById("w-liq").textContent     = fU(liqT);
-  document.getElementById("w-liq-pct").textContent = fmt(grand>0?liqT/grand*100:0,1)+"% del total";
-  var wr = document.getElementById("w-real"); wr.className = clr(realizado); wr.style.cssText = "font-size:15px;font-weight:700";
-  wr.textContent = (realizado>=0?"+":"")+fU(realizado);
-  var sp = dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
-  if(chartPerf) chartPerf.destroy();
-  chartPerf = new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
-  var tI = flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
-  var tE = flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
-  var neto=tI-tE, rend=grand-neto, rendPct=neto>0?rend/neto*100:0;
-  document.getElementById("rend-real").innerHTML =
+  document.getElementById("w-best").textContent=best.ticker;document.getElementById("w-best-p").textContent=pct(best.gpPct)+" · "+fU(best.gpUSD);
+  document.getElementById("w-worst").textContent=worst.ticker;document.getElementById("w-worst-p").textContent=pct(worst.gpPct)+" · "+fU(worst.gpUSD);
+  document.getElementById("w-liq").textContent=fU(liqT);document.getElementById("w-liq-pct").textContent=fmt(grand>0?liqT/grand*100:0,1)+"% del total";
+  var wr=document.getElementById("w-real");wr.className=clr(realizado);wr.style.cssText="font-size:15px;font-weight:700";wr.textContent=(realizado>=0?"+":"")+fU(realizado);
+  var sp=dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
+  if(chartPerf)chartPerf.destroy();
+  chartPerf=new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  var tI=flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
+  var tE=flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
+  var neto=tI-tE,rend=grand-neto,rendPct=neto>0?rend/neto*100:0;
+  document.getElementById("rend-real").innerHTML=
     mc("Ingresado","+"+fU(tI),"","pos")+mc("Retirado","-"+fU(tE),"","neg")+
     mc("Capital neto",fU(neto),"","neu")+mc("Cartera hoy",fU(grand),"","neu")+
     mc("Rendimiento real",(rend>=0?"+":"")+fU(rend),pct(rendPct),clr(rend))+
     mc("G/P realizada",(realizado>=0?"+":"")+fU(realizado),"",clr(realizado));
-  if(chartRend) chartRend.destroy();
-  chartRend = new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  if(chartRend)chartRend.destroy();
+  chartRend=new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
 }
 
 // ══ CARTERA ══
-function mkSectorSel(ticker, sectorActual){
+function mkSectorSel(ticker,sectorActual){
   return '<select class="sec-sel" onchange="cambiarSector(\''+ticker+'\',this.value)">'+
-    SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===sectorActual?' selected':'')+'>'+s+'</option>'; }).join("")+
+    SECTORES_ALL.map(function(s){return '<option value="'+s+'"'+(s===sectorActual?' selected':'')+'>'+s+'</option>';}).join("")+
   '</select>';
 }
-function mkEditBtn(ticker){ return '<button class="edit-btn" onclick="editarPosicion(\''+ticker+'\')">✏️</button>'; }
+function mkEditBtn(ticker){return '<button class="edit-btn" onclick="editarPosicion(\''+ticker+'\')">✏️</button>';}
 
 function renderCartera(){
-  var dat   = getPosData();
-  var liq   = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
+  var dat=getPosData(),liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
   function rowNY(d){
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
       '<td>'+mkSectorSel(d.ticker,d.sector)+'</td>'+
       '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
-      '<td>'+fU(d.ppc)+'</td>'+
-      '<td><strong>'+fU(d.precioUSD)+'</strong></td>'+
+      '<td>'+fU(d.ppc)+'</td><td><strong>'+fU(d.precioUSD)+'</strong></td>'+
       '<td class="'+clr(d.varHoy)+'" style="font-size:11px">'+pct(d.varHoy)+'</td>'+
       '<td class="'+clr(d.gpPct)+'">'+pct(d.gpPct)+'</td>'+
       '<td class="'+clr(d.gpUSD)+'">'+(d.gpUSD>=0?"+":"")+fU(d.gpUSD)+'</td>'+
@@ -1148,13 +1045,11 @@ function renderCartera(){
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
   }
   function rowAR(d){
-    var ars = d.precioARS != null ? fARS(d.precioARS) : '-';
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+    var ars=d.precioARS!=null?fARS(d.precioARS):'-';
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
       '<td>'+mkSectorSel(d.ticker,d.sector)+'</td>'+
       '<td>'+fmt(d.cantidad,d.cantidad%1===0?0:2)+'</td>'+
-      '<td>'+fU(d.ppc)+'</td>'+
-      '<td><strong>'+fU(d.precioUSD)+'</strong></td>'+
+      '<td>'+fU(d.ppc)+'</td><td><strong>'+fU(d.precioUSD)+'</strong></td>'+
       '<td style="font-size:11px;color:#555">'+ars+'</td>'+
       '<td class="'+clr(d.varHoy)+'" style="font-size:11px">'+pct(d.varHoy)+'</td>'+
       '<td class="'+clr(d.gpPct)+'">'+pct(d.gpPct)+'</td>'+
@@ -1163,22 +1058,17 @@ function renderCartera(){
       '<td style="font-size:11px;color:#888">'+fmt(grand>0?d.total/grand*100:0,1)+'%</td>'+
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
   }
-  var fNY   = document.getElementById("filtro-nyse").value;
-  var fAR   = document.getElementById("filtro-ar").value;
-  var nyAll = dat.filter(function(d){return d.tipo==="CEDEAR";});
-  var arAll = dat.filter(function(d){return d.tipo==="AR";});
-  var ny    = fNY ? nyAll.filter(function(d){return d.sector===fNY;}) : nyAll;
-  var ar    = fAR ? arAll.filter(function(d){return d.sector===fAR;}) : arAll;
-  var bo    = dat.filter(function(d){return d.tipo==="BONO";});
-  document.getElementById("tb-nyse").innerHTML = ny.length
-    ? ny.map(rowNY).join("")
-    : '<tr><td colspan="11" class="empty-state">'+(fNY?"Sin posiciones en "+fNY:"Sin posiciones")+'</td></tr>';
-  document.getElementById("tb-ar").innerHTML = ar.length
-    ? ar.map(rowAR).join("")
-    : '<tr><td colspan="12" class="empty-state">'+(fAR?"Sin posiciones en "+fAR:"Sin posiciones")+'</td></tr>';
-  document.getElementById("tb-bono").innerHTML = bo.length ? bo.map(function(d){
-    return '<tr>'+
-      '<td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
+  var fNY=document.getElementById("filtro-nyse").value;
+  var fAR=document.getElementById("filtro-ar").value;
+  var nyAll=dat.filter(function(d){return d.tipo==="CEDEAR";});
+  var arAll=dat.filter(function(d){return d.tipo==="AR";});
+  var ny=fNY?nyAll.filter(function(d){return d.sector===fNY;}):nyAll;
+  var ar=fAR?arAll.filter(function(d){return d.sector===fAR;}):arAll;
+  var bo=dat.filter(function(d){return d.tipo==="BONO";});
+  document.getElementById("tb-nyse").innerHTML=ny.length?ny.map(rowNY).join(""):'<tr><td colspan="11" class="empty-state">'+(fNY?"Sin posiciones en "+fNY:"Sin posiciones")+'</td></tr>';
+  document.getElementById("tb-ar").innerHTML=ar.length?ar.map(rowAR).join(""):'<tr><td colspan="12" class="empty-state">'+(fAR?"Sin posiciones en "+fAR:"Sin posiciones")+'</td></tr>';
+  document.getElementById("tb-bono").innerHTML=bo.length?bo.map(function(d){
+    return '<tr><td><span class="tkr">'+d.ticker+'</span><br><small style="color:#888;font-size:10px">'+d.nombre+'</small></td>'+
       '<td>'+fmt(d.cantidad,2)+'</td><td>'+fU(d.ppc)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:5px"><strong>'+fU(d.precioUSD)+'</strong>'+
         '<button onclick="editarPrecioBono(\''+d.ticker+'\')" style="font-size:10px;padding:2px 5px;border:.5px solid #1565c0;color:#1565c0;background:#fff;border-radius:5px;cursor:pointer">✏️ precio</button></div></td>'+
@@ -1186,142 +1076,92 @@ function renderCartera(){
       '<td class="'+clr(d.gpUSD)+'">'+(d.gpUSD>=0?"+":"")+fU(d.gpUSD)+'</td>'+
       '<td>'+fU(d.total)+'</td>'+
       '<td style="white-space:nowrap">'+mkEditBtn(d.ticker)+'<button class="sell-btn" onclick="preSell(\''+d.ticker+'\')">Vender</button></td></tr>';
-  }).join("") : '<tr><td colspan="8" class="empty-state">Sin bonos</td></tr>';
-  document.getElementById("tb-liq").innerHTML = liq.map(function(l){
-    var esLiquido = l.ticker === "LIQUIDO";
-    var esFCI     = l.ticker === "FCI $";
-    var editBtn   = esLiquido
-      ? '<button class="edit-btn" onclick="ajustarLiquido()">✏️ Ajustar</button>'
-      : '<button class="edit-btn" onclick="editarFCI()">✏️ Editar</button>';
-    return '<tr>'+
-      '<td><span class="tkr">'+l.ticker+'</span> <small style="color:#888">'+l.nombre+'</small></td>'+
+  }).join(""):'<tr><td colspan="8" class="empty-state">Sin bonos</td></tr>';
+  document.getElementById("tb-liq").innerHTML=liq.map(function(l){
+    return '<tr><td><span class="tkr">'+l.ticker+'</span> <small style="color:#888">'+l.nombre+'</small></td>'+
       '<td>'+fU(l.total)+'</td>'+
       '<td>'+fmt(grand>0?l.total/grand*100:0,1)+'%</td>'+
-      '<td>'+editBtn+'</td></tr>';
-  }).join("") || '<tr><td colspan="4" class="empty-state">Sin líquido</td></tr>';
+      '<td>'+mkEditBtn(l.ticker)+'</td></tr>';
+  }).join("")||'<tr><td colspan="4" class="empty-state">Sin líquido</td></tr>';
 }
 
 // ══ EDITAR POSICION ══
-function cambiarSector(ticker, nuevoSector){
-  upsertExtraPos(ticker, {sector: nuevoSector});
-  reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-  save();
-  // Actualizar dashboard sin re-renderizar cartera (para no resetear el select)
-  renderDashboard();
+function cambiarSector(ticker,nuevoSector){
+  upsertExtraPos(ticker,{sector:nuevoSector});
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+  save();renderDashboard();
 }
-
 function editarPosicion(ticker){
-  var pos = posiciones.find(function(p){ return p.ticker === ticker; });
-  if(!pos){ alert("Posición no encontrada."); return; }
-  var overlay = document.createElement("div");
-  overlay.className = "modal-overlay";
-  var secOpts  = SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===pos.sector?' selected':'')+'>'+s+'</option>'; }).join("");
-  var tipoOpts = TIPOS_ALL.map(function(t){    return '<option value="'+t+'"'+(t===pos.tipo ?' selected':'')+'>'+t+'</option>'; }).join("");
-  overlay.innerHTML =
-    '<div class="modal-box">'+
-      '<div class="modal-title">✏️ Editar posición — '+ticker+'</div>'+
-      '<div class="form-grid" style="grid-template-columns:1fr 1fr">'+
-        '<div style="grid-column:1/-1"><label>Nombre</label><input id="ep-nombre" value="'+pos.nombre.replace(/"/g,"&quot;")+'"></div>'+
-        '<div><label>Sector</label><select id="ep-sector">'+secOpts+'</select></div>'+
-        '<div><label>Tipo</label><select id="ep-tipo">'+tipoOpts+'</select></div>'+
-        '<div><label>Cantidad</label><input id="ep-cant" type="number" step="0.001" value="'+pos.cantidad+'"></div>'+
-        '<div><label>PPC USD</label><input id="ep-ppc" type="number" step="0.01" value="'+pos.ppc+'"></div>'+
-      '</div>'+
-      '<div style="background:#fff3e0;border-radius:8px;padding:8px 12px;font-size:11px;color:#e65100;margin-bottom:14px">'+
-        '⚠️ Cambiar cantidad o PPC afecta el cálculo de G/P. Solo editá si hay un error de carga.'+
-      '</div>'+
-      '<div style="display:flex;gap:8px">'+
-        '<button id="ep-ok"  class="sbtn">💾 Guardar</button>'+
-        '<button id="ep-no"  class="sbtn" style="background:#888">Cancelar</button>'+
-      '</div>'+
-    '</div>';
+  var pos=posiciones.find(function(p){return p.ticker===ticker;});
+  if(!pos){alert("Posición no encontrada.");return;}
+  var overlay=document.createElement("div");
+  overlay.className="modal-overlay";
+  var secOpts=SECTORES_ALL.map(function(s){return '<option value="'+s+'"'+(s===pos.sector?' selected':'')+'>'+s+'</option>';}).join("");
+  var tipoOpts=TIPOS_ALL.map(function(t){return '<option value="'+t+'"'+(t===pos.tipo?' selected':'')+'>'+t+'</option>';}).join("");
+  overlay.innerHTML=
+    '<div class="modal-box"><div class="modal-title">✏️ Editar — '+ticker+'</div>'+
+    '<div class="form-grid" style="grid-template-columns:1fr 1fr">'+
+      '<div style="grid-column:1/-1"><label>Nombre</label><input id="ep-nombre" value="'+pos.nombre.replace(/"/g,"&quot;")+'"></div>'+
+      '<div><label>Sector</label><select id="ep-sector">'+secOpts+'</select></div>'+
+      '<div><label>Tipo</label><select id="ep-tipo">'+tipoOpts+'</select></div>'+
+      '<div><label>Cantidad</label><input id="ep-cant" type="number" step="0.001" value="'+pos.cantidad+'"></div>'+
+      '<div><label>PPC USD</label><input id="ep-ppc" type="number" step="0.01" value="'+pos.ppc+'"></div>'+
+    '</div>'+
+    '<div style="background:#fff3e0;border-radius:8px;padding:8px 12px;font-size:11px;color:#e65100;margin-bottom:14px">'+
+      '⚠️ Cambiar cantidad o PPC afecta el cálculo de G/P.'+
+    '</div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<button id="ep-ok" class="sbtn">💾 Guardar</button>'+
+      '<button id="ep-no" class="sbtn" style="background:#888">Cancelar</button>'+
+    '</div></div>';
   document.body.appendChild(overlay);
-  document.getElementById("ep-no").onclick = function(){ document.body.removeChild(overlay); };
-  overlay.onclick = function(e){ if(e.target === overlay) document.body.removeChild(overlay); };
-  document.getElementById("ep-ok").onclick = function(){
-    var nombre = document.getElementById("ep-nombre").value.trim();
-    var sector = document.getElementById("ep-sector").value;
-    var tipo   = document.getElementById("ep-tipo").value;
-    var cant   = parseFloat(document.getElementById("ep-cant").value);
-    var ppc    = parseFloat(document.getElementById("ep-ppc").value);
-    if(!nombre || isNaN(cant) || cant <= 0 || isNaN(ppc) || ppc <= 0){ alert("Completá todos los campos."); return; }
-    upsertExtraPos(ticker, {nombre:nombre, sector:sector, tipo:tipo, cantidad:cant, ppc:ppc});
-    reconstruirEstado({extraPos:extraPos, extraFlujos:extraFlujos, extraVentas:extraVentas, alertas:alertas});
-    save();
-    document.body.removeChild(overlay);
-    renderCartera();
-    renderDashboard();
+  document.getElementById("ep-no").onclick=function(){document.body.removeChild(overlay);};
+  overlay.onclick=function(e){if(e.target===overlay)document.body.removeChild(overlay);};
+  document.getElementById("ep-ok").onclick=function(){
+    var nombre=document.getElementById("ep-nombre").value.trim();
+    var sector=document.getElementById("ep-sector").value;
+    var tipo=document.getElementById("ep-tipo").value;
+    var cant=parseFloat(document.getElementById("ep-cant").value);
+    var ppc=parseFloat(document.getElementById("ep-ppc").value);
+    if(!nombre||isNaN(cant)||cant<=0||isNaN(ppc)||ppc<=0){alert("Completá todos los campos.");return;}
+    upsertExtraPos(ticker,{nombre:nombre,sector:sector,tipo:tipo,cantidad:cant,ppc:ppc});
+    reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+    save();document.body.removeChild(overlay);renderCartera();renderDashboard();
   };
 }
-
-function ajustarLiquido(){
-  var actual = calcularLiquidoUSD();
-  var ajusteActual = parseFloat(localStorage.getItem("liquido_ajuste")||"0");
-  var nuevo = prompt(
-    "💵 Ajustar Líquido USD\n\n"+
-    "Calculado automáticamente: "+fU(actual)+"\n"+
-    "Ajuste actual: "+fU(ajusteActual)+"\n\n"+
-    "Ingresá el saldo REAL que tenés en USD\n"+
-    "(Ej: si tenés 500 USD reales, escribí 500)",
-    (actual+ajusteActual).toFixed(2)
-  );
-  if(nuevo===null) return;
-  var v = parseFloat(nuevo.replace(",","."));
-  if(isNaN(v) || v < 0){ alert("Valor inválido."); return; }
-  var ajuste = v - actual;
-  localStorage.setItem("liquido_ajuste", ajuste.toFixed(2));
-  renderCartera(); renderDashboard();
-}
-
-function editarFCI(){
-  var actual = parseFloat(localStorage.getItem("fci_usd")||"0");
-  var nuevo = prompt(
-    "📊 FCI Pesos — Valor en USD\n\n"+
-    "Actual: "+fU(actual)+"\n\n"+
-    "Ingresá el valor actual de tu FCI en USD\n"+
-    "(Convertí el saldo en pesos ÷ MEP $"+fmt(cotiz.mep)+")",
-    actual.toFixed(2)
-  );
-  if(nuevo===null) return;
-  var v = parseFloat(nuevo.replace(",","."));
-  if(isNaN(v) || v < 0){ alert("Valor inválido."); return; }
-  localStorage.setItem("fci_usd", v.toFixed(2));
-  renderCartera(); renderDashboard();
-}
-
 function editarPrecioBono(tk){
-  var pos = posiciones.find(function(p){ return p.ticker === tk; });
-  var act = (precios[tk] && precios[tk].precio) || (pos && pos.ppc) || 0;
-  var n   = prompt("📊 "+tk+" — Precio USD actual\nActual: "+act.toFixed(2), act.toFixed(2));
-  if(n === null) return;
-  var p = parseFloat(n);
-  if(isNaN(p) || p <= 0){ alert("Precio inválido."); return; }
-  precios[tk] = {precio:p, varHoy:0, precioARS:null, manual:true};
-  renderCartera(); renderDashboard();
+  var pos=posiciones.find(function(p){return p.ticker===tk;});
+  var act=(precios[tk]&&precios[tk].precio)||(pos&&pos.ppc)||0;
+  var n=prompt("📊 "+tk+" — Precio USD actual\nActual: "+act.toFixed(2),act.toFixed(2));
+  if(n===null)return;
+  var p=parseFloat(n);
+  if(isNaN(p)||p<=0){alert("Precio inválido.");return;}
+  precios[tk]={precio:p,varHoy:0,precioARS:null,manual:true};
+  renderCartera();renderDashboard();
 }
 
 // ══ FLUJO ══
 function renderFlujo(){
-  var tI    = flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
-  var tE    = flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
-  var neto  = tI - tE;
-  var dat   = getPosData(), liq = getLiq();
-  var grand = dat.reduce(function(s,d){return s+d.total;},0) + liq.reduce(function(s,l){return s+l.total;},0);
-  var rend  = grand - neto, rendPct = neto > 0 ? rend/neto*100 : 0;
-  document.getElementById("flujo-metrics").innerHTML =
+  var tI=flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
+  var tE=flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
+  var neto=tI-tE;
+  var dat=getPosData(),liq=getLiq();
+  var grand=dat.reduce(function(s,d){return s+d.total;},0)+liq.reduce(function(s,l){return s+l.total;},0);
+  var rend=grand-neto,rendPct=neto>0?rend/neto*100:0;
+  document.getElementById("flujo-metrics").innerHTML=
     mc("Total ingresado","+"+fU(tI),flujos.filter(function(f){return f.ingresoUSD>0;}).length+" mov.","pos")+
     mc("Total retirado","-"+fU(tE),"","neg")+
     mc("Capital neto",fU(neto),"","neu")+
     mc("Cartera hoy",fU(grand),"","neu")+
     mc("Rendimiento real",(rend>=0?"+":"")+fU(rend),pct(rendPct),clr(rend));
-  var byY = {};
-  flujos.forEach(function(f){ var y=f.fecha.slice(0,4); if(!byY[y]) byY[y]={ing:0,egr:0}; byY[y].ing+=f.ingresoUSD||0; byY[y].egr+=Math.abs(f.egresoUSD||0); });
-  var yrs = Object.keys(byY).sort();
-  if(chartFlujo) chartFlujo.destroy();
-  chartFlujo = new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
-  var srt = flujos.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
-  document.getElementById("tb-flujo").innerHTML = srt.map(function(f){
-    var esExtra = extraFlujos.indexOf(f) >= 0;
+  var byY={};
+  flujos.forEach(function(f){var y=f.fecha.slice(0,4);if(!byY[y])byY[y]={ing:0,egr:0};byY[y].ing+=f.ingresoUSD||0;byY[y].egr+=Math.abs(f.egresoUSD||0);});
+  var yrs=Object.keys(byY).sort();
+  if(chartFlujo)chartFlujo.destroy();
+  chartFlujo=new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  var srt=flujos.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
+  document.getElementById("tb-flujo").innerHTML=srt.map(function(f){
+    var esExtra=extraFlujos.indexOf(f)>=0;
     return '<tr><td>'+f.fecha+'</td>'+
       '<td class="'+(f.ingresoARS>0?"pos":"")+'">'+( f.ingresoARS>0?fARS(f.ingresoARS):"-")+'</td>'+
       '<td class="'+(f.egresoARS>0?"neg":"")+'">'+( f.egresoARS>0?"-"+fARS(f.egresoARS):"-")+'</td>'+
@@ -1332,7 +1172,7 @@ function renderFlujo(){
       '<td>'+(esExtra?'<button class="del-btn" onclick="elimFlujo(\''+f.fecha+f.ingresoARS+'\')">✕</button>':'')+'</td></tr>';
   }).join("");
 }
-function showFlujoForm(){ document.getElementById("flujo-form").style.display="block"; document.getElementById("fl-fecha").value=hoy(); }
+function showFlujoForm(){document.getElementById("flujo-form").style.display="block";document.getElementById("fl-fecha").value=hoy();}
 function agregarFlujo(){
   var fecha=document.getElementById("fl-fecha").value;
   var ing=parseFloat(document.getElementById("fl-ingreso").value)||0;
@@ -1341,18 +1181,14 @@ function agregarFlujo(){
   var nota=document.getElementById("fl-nota").value;
   if(!fecha||(!ing&&!egr)){alert("Completá fecha y monto.");return;}
   var nf={fecha:fecha,ingresoARS:ing,egresoARS:egr,mep:mep,ingresoUSD:ing>0?ing/mep:0,egresoUSD:egr>0?-egr/mep:0,nota:nota};
-  extraFlujos.push(nf);
-  flujos=clonar(FLUJO_BASE).concat(extraFlujos);
-  save();
-  ["fl-ingreso","fl-egreso","fl-nota"].forEach(function(id){document.getElementById(id).value="";});
-  document.getElementById("flujo-form").style.display="none";
-  renderFlujo(); renderDashboard();
+  extraFlujos.push(nf);flujos=clonar(FLUJO_BASE).concat(extraFlujos);
+  save();["fl-ingreso","fl-egreso","fl-nota"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("flujo-form").style.display="none";renderFlujo();renderDashboard();
 }
 function elimFlujo(key){
-  if(!confirm("¿Eliminar?")) return;
-  extraFlujos=extraFlujos.filter(function(f){return (f.fecha+f.ingresoARS)!==key;});
-  flujos=clonar(FLUJO_BASE).concat(extraFlujos);
-  save(); renderFlujo(); renderDashboard();
+  if(!confirm("¿Eliminar?"))return;
+  extraFlujos=extraFlujos.filter(function(f){return(f.fecha+f.ingresoARS)!==key;});
+  flujos=clonar(FLUJO_BASE).concat(extraFlujos);save();renderFlujo();renderDashboard();
 }
 
 // ══ VENTAS ══
@@ -1368,10 +1204,8 @@ function renderVentas(){
   }).join("")||'<tr><td colspan="10" class="empty-state">No hay ventas</td></tr>';
 }
 function alertaRecompra(tk,pv){
-  showTab('alertas',document.querySelectorAll('.tab')[3]);
-  showAlertaForm('COMPRA');
-  document.getElementById('al-ticker').value=tk;
-  document.getElementById('al-precio').value=pv.toFixed(2);
+  showTab('alertas',document.querySelectorAll('.tab')[3]);showAlertaForm('COMPRA');
+  document.getElementById('al-ticker').value=tk;document.getElementById('al-precio').value=pv.toFixed(2);
   document.getElementById('al-nota').value="Recompra (vendido en "+pv.toFixed(2)+")";
 }
 
@@ -1393,7 +1227,7 @@ function exportarFlujo(){
   dlCSV("Flujo_"+hoy()+".csv",toCSV(["Fecha","Ingreso ARS","Egreso ARS","MEP","Ingreso USD","Egreso USD","Nota"],
     flujos.map(function(f){return[f.fecha,fmt(f.ingresoARS,2),fmt(f.egresoARS,2),fmt(f.mep,2),fmt(f.ingresoUSD,2),fmt(Math.abs(f.egresoUSD||0),2),f.nota||""];})));
 }
-function exportarCompleto(){ exportarCartera(); setTimeout(exportarVentas,400); setTimeout(exportarFlujo,800); }
+function exportarCompleto(){exportarCartera();setTimeout(exportarVentas,400);setTimeout(exportarFlujo,800);}
 
 // ══ OPERAR ══
 function checkSectorOtro(){var sel=document.getElementById("c-sector").value;var c=document.getElementById("c-sector-custom");c.style.display=sel==="OTRO"?"block":"none";if(sel==="OTRO")c.focus();}
@@ -1406,7 +1240,7 @@ function calcPrev(){
   if(!c||!p){document.getElementById("compra-prev").textContent="";return;}
   var ex=posiciones.find(function(x){return x.ticker===tk;});
   var txt="Total: "+fU(c*p)+" · $"+fmt(c*p*ccl);
-  if(ex) txt+=" · Nuevo PM: ~"+fU((ex.ppc*ex.cantidad+p*c)/(ex.cantidad+c));
+  if(ex)txt+=" · Nuevo PM: ~"+fU((ex.ppc*ex.cantidad+p*c)/(ex.cantidad+c));
   document.getElementById("compra-prev").textContent=txt;
 }
 function registrarCompra(){
@@ -1419,25 +1253,16 @@ function registrarCompra(){
   var ccl=parseFloat(document.getElementById("c-ccl").value)||cotiz.ccl;
   var fecha=document.getElementById("c-fecha").value;
   if(!ticker||isNaN(cant)||isNaN(precio)||cant<=0||precio<=0){alert("Completá todos los campos.");return;}
-  var idxE=getExtraPos(ticker);
-  var idxB=getBasePos(ticker);
-  if(idxE>=0){
-    var ep=extraPos[idxE];
-    ep.ppc=(ep.ppc*ep.cantidad+precio*cant)/(ep.cantidad+cant);
-    ep.cantidad+=cant;
-    ep._compras=(ep._compras||0)+1;
-  } else if(idxB>=0){
-    var bp=POS_INIT[idxB];
-    extraPos.push({ticker:ticker,nombre:bp.nombre,tipo:bp.tipo,sector:bp.sector,cantidad:bp.cantidad+cant,ppc:(bp.ppc*bp.cantidad+precio*cant)/(bp.cantidad+cant),_compras:1});
-  } else {
-    extraPos.push({ticker:ticker,nombre:nombre||ticker,tipo:tipo,sector:sector,cantidad:cant,ppc:precio,_compras:1});
-  }
+  var idxE=getExtraPos(ticker),idxB=getBasePos(ticker);
+  if(idxE>=0){var ep=extraPos[idxE];ep.ppc=(ep.ppc*ep.cantidad+precio*cant)/(ep.cantidad+cant);ep.cantidad+=cant;ep._compras=(ep._compras||0)+1;}
+  else if(idxB>=0){var bp=POS_INIT[idxB];extraPos.push({ticker:ticker,nombre:bp.nombre,tipo:bp.tipo,sector:bp.sector,cantidad:bp.cantidad+cant,ppc:(bp.ppc*bp.cantidad+precio*cant)/(bp.cantidad+cant),_compras:1});}
+  else{extraPos.push({ticker:ticker,nombre:nombre||ticker,tipo:tipo,sector:sector,cantidad:cant,ppc:precio,_compras:1});}
   reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
-  save(); actualizarSelectVenta();
+  save();actualizarSelectVenta();
   ["c-ticker","c-nombre","c-cant","c-precio","c-com"].forEach(function(id){document.getElementById(id).value="";});
-  document.getElementById("c-sector-custom").value=""; document.getElementById("c-sector-custom").style.display="none";
-  document.getElementById("c-sector").value="TECNOLOGICO"; document.getElementById("compra-prev").textContent="";
-  loadAll(); alert("✅ Compra de "+cant+" "+ticker+" registrada.");
+  document.getElementById("c-sector-custom").value="";document.getElementById("c-sector-custom").style.display="none";
+  document.getElementById("c-sector").value="TECNOLOGICO";document.getElementById("compra-prev").textContent="";
+  loadAll();alert("✅ Compra de "+cant+" "+ticker+" registrada.");
 }
 function registrarVenta(){
   var ticker=document.getElementById("v-ticker").value;
@@ -1449,18 +1274,17 @@ function registrarVenta(){
   var pos=posiciones.find(function(p){return p.ticker===ticker;});
   if(!pos){alert("Ticker no encontrado.");return;}
   if(cant>pos.cantidad+0.001){alert("Solo tenés "+fmt(pos.cantidad,3)+" uds.");return;}
-  var gp=(precio-pos.ppc)*cant, gpPct=((precio-pos.ppc)/pos.ppc)*100;
-  if(!confirm("Vendés "+cant+" "+ticker+" a "+fU(precio)+"\nG/P: "+(gp>=0?"+":"")+fU(gp)+" ("+pct(gpPct)+")\n¿Confirmás?")) return;
+  var gp=(precio-pos.ppc)*cant,gpPct=((precio-pos.ppc)/pos.ppc)*100;
+  if(!confirm("Vendés "+cant+" "+ticker+" a "+fU(precio)+"\nG/P: "+(gp>=0?"+":"")+fU(gp)+" ("+pct(gpPct)+")\n¿Confirmás?"))return;
   extraVentas.push({fecha:fecha||hoy(),ticker:ticker,cant:cant,pc:pos.ppc,pv:precio,gp:gp,ccl:ccl,tipo:pos.tipo==="AR"?"ACCIONES":pos.tipo==="BONO"?"BONOS":"CEDEAR"});
-  var idxE=getExtraPos(ticker);
-  var idxB=getBasePos(ticker);
-  if(idxE>=0){ extraPos[idxE].cantidad-=cant; if(extraPos[idxE].cantidad<=0.001) extraPos.splice(idxE,1); }
-  else if(idxB>=0){ var bv=POS_INIT[idxB]; extraPos.push({ticker:ticker,nombre:bv.nombre,tipo:bv.tipo,sector:bv.sector,ppc:bv.ppc,cantidad:bv.cantidad-cant}); }
+  var idxE=getExtraPos(ticker),idxB=getBasePos(ticker);
+  if(idxE>=0){extraPos[idxE].cantidad-=cant;if(extraPos[idxE].cantidad<=0.001)extraPos.splice(idxE,1);}
+  else if(idxB>=0){var bv=POS_INIT[idxB];extraPos.push({ticker:ticker,nombre:bv.nombre,tipo:bv.tipo,sector:bv.sector,ppc:bv.ppc,cantidad:bv.cantidad-cant});}
   reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
-  save(); actualizarSelectVenta();
+  save();actualizarSelectVenta();
   ["v-cant","v-precio","v-com"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("venta-prev").textContent="";
-  loadAll(); alert("✅ Venta registrada. G/P: "+(gp>=0?"+":"")+fU(gp));
+  loadAll();alert("✅ Venta registrada. G/P: "+(gp>=0?"+":"")+fU(gp));
 }
 function preCompra(tipo){showTab("operar",document.querySelectorAll(".tab")[2]);document.getElementById("c-tipo").value=tipo;}
 function preSell(ticker){showTab("operar",document.querySelectorAll(".tab")[2]);document.getElementById("v-ticker").value=ticker;previewVenta();}
@@ -1478,48 +1302,43 @@ document.getElementById("v-ticker").addEventListener("input",previewVenta);
 document.getElementById("v-cant").addEventListener("input",previewVenta);
 document.getElementById("v-precio").addEventListener("input",previewVenta);
 function actualizarSelectVenta(){
-  var sel=document.getElementById("v-ticker"); var cur=sel.value;
+  var sel=document.getElementById("v-ticker");var cur=sel.value;
   sel.innerHTML='<option value="">-- elegí --</option>'+
-    posiciones.filter(function(p){return p.tipo!=="LIQUIDO";})
-    .map(function(p){return '<option value="'+p.ticker+'">'+p.ticker+' ('+fmt(p.cantidad,2)+' uds)</option>';}).join("");
-  if(cur) sel.value=cur;
+    posiciones.filter(function(p){return p.tipo!=="LIQUIDO";}).map(function(p){return '<option value="'+p.ticker+'">'+p.ticker+' ('+fmt(p.cantidad,2)+' uds)</option>';}).join("");
+  if(cur)sel.value=cur;
 }
 
 // ══ NAV ══
 function showTab(name,el){
-  ["dashboard","cartera","operar","flujo","alertas","ventas","exportar"].forEach(function(t){
-    var e=document.getElementById("tab-"+t); if(e) e.style.display=t===name?"block":"none";
-  });
+  ["dashboard","cartera","operar","flujo","alertas","ventas","exportar"].forEach(function(t){var e=document.getElementById("tab-"+t);if(e)e.style.display=t===name?"block":"none";});
   document.querySelectorAll(".tab,.tab2").forEach(function(t){t.classList.remove("active");});
-  if(el) el.classList.add("active");
-  if(name==="operar")  actualizarSelectVenta();
-  if(name==="cartera") renderCartera();
-  if(name==="flujo")   renderFlujo();
-  if(name==="alertas") renderAlertas();
-  if(name==="ventas")  renderVentas();
+  if(el)el.classList.add("active");
+  if(name==="operar")actualizarSelectVenta();
+  if(name==="cartera")renderCartera();
+  if(name==="flujo")renderFlujo();
+  if(name==="alertas")renderAlertas();
+  if(name==="ventas")renderVentas();
 }
 function loadAll(){
   document.getElementById("lastUpd").textContent="Actualizando...";
-  return fetchCotizaciones()
-  .then(function(){ return fetchPrecios(); })
-  .then(function(){
-    renderDashboard(); renderCartera(); renderFlujo(); renderVentas();
-    if(document.getElementById("tab-alertas").style.display!=="none") renderAlertas();
+  return fetchCotizaciones().then(function(){return fetchPrecios();}).then(function(){
+    renderDashboard();renderCartera();renderFlujo();renderVentas();
+    if(document.getElementById("tab-alertas").style.display!=="none")renderAlertas();
     document.getElementById("lastUpd").textContent="Actualizado: "+new Date().toLocaleTimeString("es-AR");
   });
 }
 
 // ══ INIT ══
-document.getElementById("c-fecha").value  = hoy();
-document.getElementById("v-fecha").value  = hoy();
-document.getElementById("fl-fecha").value = hoy();
+document.getElementById("c-fecha").value=hoy();
+document.getElementById("v-fecha").value=hoy();
+document.getElementById("fl-fecha").value=hoy();
 pedirPermisoNotificaciones();
 actualizarSelectVenta();
-setInterval(loadAll, 5*60*1000);
+setInterval(loadAll,5*60*1000);
 setInterval(function(){
-  if(accessToken && Object.keys(precios).length > 0) checkAlertas();
-  if(document.getElementById("tab-alertas").style.display !== "none") renderAlertas();
-}, 30000);
+  if(accessToken&&Object.keys(precios).length>0)checkAlertas();
+  if(document.getElementById("tab-alertas").style.display!=="none")renderAlertas();
+},30000);
 intentarRestaurarSesion();
 </script>
 </body>
