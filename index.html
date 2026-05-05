@@ -747,8 +747,8 @@ function extraerPrecioAR(tk, arr){
     if(pARS > 0){
       var mep  = (cotiz.mep && cotiz.mep>100) ? cotiz.mep : 1150;
       
-      // Buscamos cualquier variación de nombre que traiga la API
-      var rawVar = item.var || item.variacion || item.change || item.change_pct || item.pct_change || item.pct || item.dp || item.cp;
+      // Buscamos cualquier variación de nombre que traiga la API, de manera segura
+      var rawVar = item["var"] || item.variacion || item.change || item.change_pct || item.pct_change || item.pct || item.dp || item.cp;
       var varHoy = 0;
       
       if (rawVar !== undefined && rawVar !== null && rawVar !== "") {
@@ -1240,6 +1240,7 @@ function agregarFlujo(){
   extraFlujos.push(nf);
   flujos=clonar(FLUJO_BASE).concat(extraFlujos);
   modificarLiquido(nf.ingresoUSD+nf.egresoUSD);
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
   save();
   ["fl-ingreso","fl-egreso","fl-nota"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("flujo-form").style.display="none";
@@ -1251,6 +1252,7 @@ function elimFlujo(key){
   if(fObj) modificarLiquido(-(fObj.ingresoUSD+fObj.egresoUSD));
   extraFlujos=extraFlujos.filter(function(f){return (f.fecha+f.ingresoARS)!==key;});
   flujos=clonar(FLUJO_BASE).concat(extraFlujos);
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
   save(); renderFlujo(); renderDashboard();
 }
 
