@@ -782,7 +782,7 @@ function fetchARfromData(tk, arr){
   });
 
   if(item){
-    var pARS = parseFloat(item.c || item.px_bid || 0);
+    var pARS = parseFloat(item.c || 0);
     if(pARS > 0){
       var mep = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
       var pUSD = pARS / mep;
