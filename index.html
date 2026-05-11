@@ -84,7 +84,8 @@ tr:hover td{background:#fafafa}
 .alert-actions{display:flex;gap:5px;justify-content:flex-end}
 .del-btn{font-size:10px;padding:2px 7px;background:#fff;border:.5px solid #ddd;color:#888;border-radius:5px;cursor:pointer}
 .del-btn:hover{background:#f5f5f5}
-.sec-sel{font-size:10px;padding:2px 5px;border:.5px solid #ddd;border-radius:5px;background:#fafafa;max-width:110px}
+.sec-input{font-size:10px;padding:2px 5px;border:.5px solid #ddd;border-radius:5px;background:#fafafa;width:110px}
+.sec-input:focus{outline:none;border-color:#1565c0;background:#fff}
 .filtro-bar{display:flex;align-items:center;gap:5px}
 .filtro-bar label{font-size:11px;color:#888}
 .filtro-bar select{font-size:11px;padding:3px 7px;border:.5px solid #ddd;border-radius:6px;background:#fafafa}
@@ -111,6 +112,9 @@ tr:hover td{background:#fafafa}
 </div>
 
 <div class="sync-bar" id="sync-bar"></div>
+
+<!-- datalist global para sectores — se actualiza dinámicamente -->
+<datalist id="dl-sectores"></datalist>
 
 <div class="header">
   <div>
@@ -151,15 +155,6 @@ tr:hover td{background:#fafafa}
       <div class="card-title" style="margin-bottom:0">🔍 Vista por sector</div>
       <select id="dash-sector" onchange="renderSectorView()" style="font-size:12px;padding:5px 10px;border:.5px solid #ddd;border-radius:7px;background:#fafafa">
         <option value="">— Elegí un sector —</option>
-        <option value="TECNOLOGICO">Tecnológico</option>
-        <option value="FINANCIERO">Financiero</option>
-        <option value="ENERGIA">Energía</option>
-        <option value="ETF">ETF</option>
-        <option value="CRIPTO">Cripto</option>
-        <option value="BRASIL">Brasil</option>
-        <option value="SALUD">Salud</option>
-        <option value="BONO">Bonos</option>
-        <option value="LIQUIDO">Líquido / FCI</option>
       </select>
     </div>
     <div id="sector-empty" style="text-align:center;color:#aaa;font-size:13px;padding:12px 0">Seleccioná un sector para ver el detalle</div>
@@ -210,10 +205,7 @@ tr:hover td{background:#fafafa}
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="filtro-bar"><label>Filtrar sector:</label>
           <select id="filtro-nyse" onchange="renderCartera()">
-            <option value="">Todos</option><option value="TECNOLOGICO">Tecnológico</option>
-            <option value="FINANCIERO">Financiero</option><option value="ETF">ETF</option>
-            <option value="CRIPTO">Cripto</option><option value="BRASIL">Brasil</option>
-            <option value="ENERGIA">Energía</option><option value="SALUD">Salud</option>
+            <option value="">Todos</option>
           </select>
         </div>
         <button class="sbtn" style="font-size:11px;padding:5px 12px" onclick="preCompra('CEDEAR')">+ Comprar</button>
@@ -227,8 +219,7 @@ tr:hover td{background:#fafafa}
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
         <div class="filtro-bar"><label>Filtrar sector:</label>
           <select id="filtro-ar" onchange="renderCartera()">
-            <option value="">Todos</option><option value="FINANCIERO">Financiero</option>
-            <option value="ENERGIA">Energía</option><option value="TECNOLOGICO">Tecnológico</option><option value="SALUD">Salud</option>
+            <option value="">Todos</option>
           </select>
         </div>
         <button class="sbtn" style="font-size:11px;padding:5px 12px" onclick="preCompra('AR')">+ Comprar</button>
@@ -260,12 +251,9 @@ tr:hover td{background:#fafafa}
       <div><label>Tipo</label><select id="c-tipo"><option value="CEDEAR">CEDEAR/NYSE</option><option value="AR">Acción AR</option><option value="BONO">Bono</option><option value="LIQUIDO">Líquido/FCI</option></select></div>
       <div><label>Ticker</label><input id="c-ticker" placeholder="AAPL..." style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase();calcPrev()"></div>
       <div><label>Nombre</label><input id="c-nombre" placeholder="Apple Inc."></div>
-      <div><label>Sector</label>
-        <select id="c-sector" onchange="checkSectorOtro()">
-          <option>TECNOLOGICO</option><option>FINANCIERO</option><option>ENERGIA</option>
-          <option>ETF</option><option>CRIPTO</option><option>SALUD</option><option>BRASIL</option><option>BONO</option><option>LIQUIDO</option><option value="OTRO">Otro</option>
-        </select>
-        <input id="c-sector-custom" placeholder="Escribí el sector..." style="display:none;margin-top:4px;width:100%;padding:6px 8px;border:.5px solid #ddd;border-radius:7px;font-size:12px">
+      <div>
+        <label>Sector</label>
+        <input id="c-sector" list="dl-sectores" placeholder="Ej: TECNOLOGICO..." style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
       </div>
       <div><label>Cantidad</label><input id="c-cant" type="number" step="0.001" placeholder="10" oninput="calcPrev()"></div>
       <div><label>Precio USD</label><input id="c-precio" type="number" step="0.01" placeholder="250" oninput="calcPrev()"></div>
@@ -399,7 +387,6 @@ var FILE_NAME    = "cartera-v9.json";
 var FINNHUB_KEY  = "d7qohjhr01qudmin0b2gd7qohjhr01qudmin0b30";
 var BASE_COMPRAS = 92;
 var BASE_VENTAS  = 37;
-var SECTORES_ALL = ["TECNOLOGICO","FINANCIERO","ENERGIA","ETF","CRIPTO","BRASIL","SALUD","BONO","LIQUIDO"];
 var TIPOS_ALL    = ["CEDEAR","AR","BONO","LIQUIDO"];
 
 var POS_INIT = [
@@ -520,6 +507,44 @@ var chartPerf   = null, chartRend = null, chartFlujo = null;
 
 function clonar(a){ return JSON.parse(JSON.stringify(a)); }
 
+// ══ Sectores dinámicos ══
+// Devuelve lista de sectores únicos presentes en la cartera actual, ordenados alfabéticamente
+function getSectoresActuales(){
+  var secs = posiciones.map(function(p){ return p.sector; });
+  return secs.filter(function(v,i,a){ return v && a.indexOf(v)===i; }).sort();
+}
+
+// Actualiza el datalist global y todos los selects de sector (filtros + dashboard)
+function actualizarSectoresUI(){
+  var secs = getSectoresActuales();
+
+  // Datalist global (usado por inputs con list="dl-sectores")
+  document.getElementById("dl-sectores").innerHTML =
+    secs.map(function(s){ return '<option value="'+s+'">'; }).join("");
+
+  // Filtro CEDEAR
+  var fNY = document.getElementById("filtro-nyse");
+  var vNY = fNY.value;
+  var secsCEDEAR = posiciones.filter(function(p){ return p.tipo==="CEDEAR"; })
+    .map(function(p){ return p.sector; }).filter(function(v,i,a){ return v&&a.indexOf(v)===i; }).sort();
+  fNY.innerHTML = '<option value="">Todos</option>' +
+    secsCEDEAR.map(function(s){ return '<option value="'+s+'"'+(s===vNY?' selected':'')+'>'+s+'</option>'; }).join("");
+
+  // Filtro AR
+  var fAR = document.getElementById("filtro-ar");
+  var vAR = fAR.value;
+  var secsAR = posiciones.filter(function(p){ return p.tipo==="AR"; })
+    .map(function(p){ return p.sector; }).filter(function(v,i,a){ return v&&a.indexOf(v)===i; }).sort();
+  fAR.innerHTML = '<option value="">Todos</option>' +
+    secsAR.map(function(s){ return '<option value="'+s+'"'+(s===vAR?' selected':'')+'>'+s+'</option>'; }).join("");
+
+  // Selector de sector en Dashboard
+  var dSec = document.getElementById("dash-sector");
+  var vDS = dSec.value;
+  dSec.innerHTML = '<option value="">— Elegí un sector —</option>' +
+    secs.map(function(s){ return '<option value="'+s+'"'+(s===vDS?' selected':'')+'>'+s+'</option>'; }).join("");
+}
+
 function getExtraPos(ticker){ return extraPos.findIndex(function(p){ return p.ticker===ticker; }); }
 function getBasePos(ticker){ return POS_INIT.findIndex(function(p){ return p.ticker===ticker; }); }
 function upsertExtraPos(ticker, cambios){
@@ -527,7 +552,7 @@ function upsertExtraPos(ticker, cambios){
   if(idxE >= 0){ Object.assign(extraPos[idxE], cambios); }
   else {
     var idxB = getBasePos(ticker);
-    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker,nombre:ticker,tipo:"CEDEAR",sector:"TECNOLOGICO",cantidad:0,ppc:0};
+    var base = idxB >= 0 ? clonar(POS_INIT[idxB]) : {ticker:ticker,nombre:ticker,tipo:"CEDEAR",sector:"",cantidad:0,ppc:0};
     extraPos.push(Object.assign(base, cambios));
   }
 }
@@ -567,6 +592,7 @@ function reconstruirEstado(d){
   });
   flujos     = clonar(FLUJO_BASE).concat(extraFlujos);
   resumenOps = clonar(RESUMEN_BASE).concat(extraVentas);
+  actualizarSectoresUI();
 }
 function estadoParaDrive(){ return {extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas,v:9,lastSync:new Date().toISOString()}; }
 
@@ -701,7 +727,6 @@ function fetchCotizaciones(){
   });
 }
 
-// ══ PRECIOS AR — fetch directo sin caché para garantizar pct_change fresco ══
 function fetchARData(){
   return fetch("https://data912.com/live/arg_stocks")
   .then(function(r){ return r.json(); })
@@ -730,45 +755,32 @@ function fetchBono(tk){
     AL30:"AL30D", GD30:"GD30D", GD41:"GD41D", AL41:"AL41D"
   };
   var sym = map[tk] || (tk.endsWith("D") ? tk : tk+"D");
-
   return fetch("https://data912.com/live/arg_bonds")
     .then(function(r){ return r.json(); })
     .then(function(arr){
-      // Buscar versión USD (con D)
       var b = arr.find(function(x){
         return (x.symbol || x.ticker || "").toUpperCase() === sym.toUpperCase();
       });
-
       if(b){
         var precio = parseFloat(b.px_ask || b.px_bid || b.c || 0);
         var varHoy = parseFloat(b.pct_change || 0);
-        console.log("✅ Bono "+tk+" ("+sym+") → USD "+precio+" | var: "+varHoy+"%");
         if(precio > 0) return { precio: precio, varHoy: varHoy, precioARS: null };
       }
-
-      // Fallback: versión ARS ÷ MEP
       var bARS = arr.find(function(x){
         return (x.symbol || x.ticker || "").toUpperCase() === tk.toUpperCase();
       });
       if(bARS){
-        var pARS  = parseFloat(bARS.px_ask || bARS.c || 0);
-        var mep   = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
-        var pUSD  = pARS / mep;
-        var vHoy  = parseFloat(bARS.pct_change || 0);
-        console.log("⚠️ Bono "+tk+" sin versión D — usando ARS÷MEP: "+pARS+"÷"+mep+" = "+pUSD.toFixed(2));
+        var pARS = parseFloat(bARS.px_ask || bARS.c || 0);
+        var mep  = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
+        var pUSD = pARS / mep;
+        var vHoy = parseFloat(bARS.pct_change || 0);
         if(pUSD > 0) return { precio: pUSD, varHoy: vHoy, precioARS: pARS };
       }
-
-      console.warn("❌ Bono "+tk+" no encontrado en arg_bonds");
       return null;
     })
-    .catch(function(e){
-      console.error("❌ fetchBono error:", e);
-      return null;
-    });
+    .catch(function(e){ console.error("❌ fetchBono error:", e); return null; });
 }
 
-// ══ EXTRACTOR AR BLINDADO Y SIN CACHÉ ══
 function extraerPrecioAR(tk, arr){
   var item = arr.find(function(x){
     return (x.ticker||x.symbol||"").toUpperCase() === tk.toUpperCase();
@@ -776,25 +788,17 @@ function extraerPrecioAR(tk, arr){
   if(item){
     var pARS = parseFloat(item.c||item.price||item.last||item.ultimo||0);
     if(pARS > 0){
-      var mep  = (cotiz.mep && cotiz.mep>100) ? cotiz.mep : 1150;
-      
-      // Buscamos cualquier variación de nombre que traiga la API, de manera segura
-      var rawVar = item["var"] || item.variacion || item.change || item.change_pct || item.pct_change || item.pct || item.dp || item.cp;
+      var mep = (cotiz.mep && cotiz.mep>100) ? cotiz.mep : 1150;
+      var rawVar = item["var"]||item.variacion||item.change||item.change_pct||item.pct_change||item.pct||item.dp||item.cp;
       var varHoy = 0;
-      
-      if (rawVar !== undefined && rawVar !== null && rawVar !== "") {
-          var stringVar = String(rawVar).replace("%", "").replace(",", ".");
-          varHoy = parseFloat(stringVar);
+      if(rawVar !== undefined && rawVar !== null && rawVar !== ""){
+        var stringVar = String(rawVar).replace("%","").replace(",",".");
+        varHoy = parseFloat(stringVar);
       }
-      
-      // Cálculo manual de respaldo
-      if (isNaN(varHoy) || varHoy === 0) {
-          var prev = parseFloat(String(item.pc || item.pclose || item.prev || item.cierre_anterior || item.o || 0).replace(",", "."));
-          if (prev > 0 && prev !== pARS) {
-              varHoy = ((pARS - prev) / prev * 100);
-          }
+      if(isNaN(varHoy)||varHoy===0){
+        var prev = parseFloat(String(item.pc||item.pclose||item.prev||item.cierre_anterior||item.o||0).replace(",","."));
+        if(prev > 0 && prev !== pARS) varHoy = ((pARS-prev)/prev*100);
       }
-
       return {precio:pARS/mep, varHoy:isNaN(varHoy)?0:varHoy, precioARS:pARS};
     }
   }
@@ -817,30 +821,21 @@ function fetchPrecioUnico(tk, mercado){
   return fetchFinnhub(tk);
 }
 
-// ══ fetchPrecios ══
 function fetchPrecios(){
   var tkPos = posiciones.filter(function(p){ return p.tipo!=="LIQUIDO"; }).map(function(p){ return p.ticker; });
   var tkAl  = alertas.filter(function(a){ return a.activa&&!a.disparada; }).map(function(a){ return a.ticker; });
   var tks   = tkPos.concat(tkAl).filter(function(v,i,a){ return a.indexOf(v)===i; });
-
   var arTks  = tks.filter(function(tk){ return getMercadoTicker(tk)==="AR"; });
   var restTks= tks.filter(function(tk){ return getMercadoTicker(tk)!=="AR"; });
-
-  // Fetch AR fresco
   var prAR = arTks.length > 0
     ? fetchARData().then(function(arData){
         arTks.forEach(function(tk){
           var r = extraerPrecioAR(tk, arData);
-          if(r){
-            precios[tk] = r; 
-          } else {
-            var pos = posiciones.find(function(p){ return p.ticker===tk; });
-            if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
-          }
+          if(r){ precios[tk] = r; }
+          else { var pos=posiciones.find(function(p){ return p.ticker===tk; }); if(!precios[tk]) precios[tk]={precio:pos?pos.ppc:0,varHoy:0,precioARS:null}; }
         });
       })
     : Promise.resolve();
-
   var prRest = Promise.all(restTks.map(function(tk){
     var m = getMercadoTicker(tk);
     var prom = m==="BONO" ? fetchBono(tk) : fetchFinnhub(tk);
@@ -850,7 +845,6 @@ function fetchPrecios(){
       else if(!precios[tk]) precios[tk] = {precio:pos?pos.ppc:0, varHoy:0, precioARS:null};
     });
   }));
-
   return Promise.all([prAR, prRest]).then(function(){ checkAlertas(); });
 }
 
@@ -877,8 +871,7 @@ function checkAlertas(){
     if((a.tipo==="COMPRA"&&pr<=a.precio)||(a.tipo==="VENTA"&&pr>=a.precio)){
       a.disparada=true; a.activa=false;
       a.fechaDisparada=new Date().toLocaleString("es-AR");
-      a.precioDisparado=pr;
-      cambio=true;
+      a.precioDisparado=pr; cambio=true;
       notificarAlerta(a,pr);
     }
   });
@@ -917,7 +910,7 @@ function renderAlertas(){
       var cerca=Math.abs(distPct)<5;
       var msg=a.tipo==="COMPRA"
         ?(pr<=a.precio?"✅ ¡DISPARADA!":"📉 Falta bajar "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)")
-        :(pr>=a.precio?"✅ ¡DISPARADA!":"📈 Falta subir " +fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
+        :(pr>=a.precio?"✅ ¡DISPARADA!":"📈 Falta subir "+fU(falta)+" ("+Math.abs(distPct).toFixed(1)+"%)");
       precioBloque='<div class="alert-prices"><span class="alert-actual">Actual: '+fU(pr)+'</span><span class="alert-objetivo">→ Obj: '+fU(a.precio)+'</span><span class="alert-distancia'+(triggered?" ok":cerca?" cerca":"")+'">'+msg+'</span></div>';
     } else {
       precioBloque='<div style="font-size:10px;color:#e65100;margin-bottom:5px">⚠️ Sin precio — tocá ↻ Actualizar</div>';
@@ -1075,6 +1068,7 @@ function renderDashboard(){
     mc("Peor posición",pct(worst.gpPct),worst.ticker,"neg")+
     mc("CCL / MEP","$"+fmt(cotiz.ccl),"MEP $"+fmt(cotiz.mep),"neu")+
     mc("Operaciones","🟢 "+nC+" compras","🔴 "+nV+" ventas","neu");
+  actualizarSectoresUI();
   if(document.getElementById("dash-sector").value) renderSectorView();
   var tipos=["CEDEAR","AR","BONO","LIQUIDO"],tiL=["CEDEARs","Acc.AR","Bonos","Líquido"],tiC=["#e65100","#1565c0","#2e7d32","#546e7a"];
   var tiT=tipos.map(function(t){ return t==="LIQUIDO"?liqT:dat.filter(function(d){return d.tipo===t;}).reduce(function(s,d){return s+d.total;},0); });
@@ -1111,7 +1105,7 @@ function renderDashboard(){
   wr.textContent=(realizado>=0?"+":"")+fU(realizado);
   var sp=dat.slice().sort(function(a,b){return b.gpPct-a.gpPct;});
   if(chartPerf) chartPerf.destroy();
-  chartPerf=new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%;"}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
+  chartPerf=new Chart(document.getElementById("cPerf"),{type:"bar",data:{labels:sp.map(function(d){return d.ticker;}),datasets:[{data:sp.map(function(d){return parseFloat(d.gpPct.toFixed(2));}),backgroundColor:sp.map(function(d){return d.gpPct>=0?"#1e7e34":"#b71c1c";}),borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return v+"%"}},grid:{color:"#f0f0f0"}},x:{grid:{display:false},ticks:{font:{size:10}}}}}});
   var tI=flujos.reduce(function(s,f){return s+(f.ingresoUSD||0);},0);
   var tE=flujos.reduce(function(s,f){return s+Math.abs(f.egresoUSD||0);},0);
   var neto=tI-tE, rend=grand-neto, rendPct=neto>0?rend/neto*100:0;
@@ -1121,14 +1115,31 @@ function renderDashboard(){
     mc("Rendimiento real",(rend>=0?"+":"")+fU(rend),pct(rendPct),clr(rend))+
     mc("G/P realizada",(realizado>=0?"+":"")+fU(realizado),"",clr(realizado));
   if(chartRend) chartRend.destroy();
-  chartRend=new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  chartRend=new Chart(document.getElementById("cRend"),{type:"bar",data:{labels:["Capital neto","Cartera hoy","Rendimiento"],datasets:[{data:[neto,grand,rend],backgroundColor:[neto>=0?"#1565c0":"#b71c1c","#1e7e34",rend>=0?"#2e7d32":"#b71c1c"],borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k"}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
 }
 
-function mkSectorSel(ticker,sectorActual){
-  return '<select class="sec-sel" onchange="cambiarSector(\''+ticker+'\',this.value)">'+
-    SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===sectorActual?' selected':'')+'>'+s+'</option>'; }).join("")+'</select>';
+// ══ mkSectorSel — input con datalist, guarda al salir (onchange/onblur) ══
+function mkSectorSel(ticker, sectorActual){
+  var safe = sectorActual ? sectorActual.replace(/"/g,"&quot;") : "";
+  return '<input class="sec-input" list="dl-sectores" value="'+safe+'" '+
+    'onchange="cambiarSectorInput(\''+ticker+'\',this)" '+
+    'onblur="cambiarSectorInput(\''+ticker+'\',this)" '+
+    'style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">';
 }
 function mkEditBtn(ticker){ return '<button class="edit-btn" onclick="editarPosicion(\''+ticker+'\')">✏️</button>'; }
+
+// Guarda el sector solo si cambió y tiene valor
+function cambiarSectorInput(ticker, input){
+  var nuevo = input.value.trim().toUpperCase();
+  if(!nuevo) return;
+  var pos = posiciones.find(function(p){ return p.ticker===ticker; });
+  if(pos && pos.sector === nuevo) return; // no cambió
+  upsertExtraPos(ticker, {sector: nuevo});
+  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
+  save();
+  actualizarSectoresUI();
+  renderDashboard();
+}
 
 function renderCartera(){
   var dat=getPosData(), liq=getLiq();
@@ -1181,22 +1192,19 @@ function renderCartera(){
   }).join("");
 }
 
-function cambiarSector(ticker,nuevoSector){
-  upsertExtraPos(ticker,{sector:nuevoSector});
-  reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
-  save(); renderDashboard();
-}
 function editarPosicion(ticker){
   var pos=posiciones.find(function(p){ return p.ticker===ticker; });
   if(!pos){ alert("Posición no encontrada."); return; }
   var overlay=document.createElement("div");
   overlay.className="modal-overlay";
-  var secOpts=SECTORES_ALL.map(function(s){ return '<option value="'+s+'"'+(s===pos.sector?' selected':'')+'>'+s+'</option>'; }).join("");
+  var secs=getSectoresActuales();
   var tipoOpts=TIPOS_ALL.map(function(t){ return '<option value="'+t+'"'+(t===pos.tipo?' selected':'')+'>'+t+'</option>'; }).join("");
   overlay.innerHTML='<div class="modal-box"><div class="modal-title">✏️ Editar posición — '+ticker+'</div>'+
     '<div class="form-grid" style="grid-template-columns:1fr 1fr">'+
     '<div style="grid-column:1/-1"><label>Nombre</label><input id="ep-nombre" value="'+pos.nombre.replace(/"/g,"&quot;")+'"></div>'+
-    '<div><label>Sector</label><select id="ep-sector">'+secOpts+'</select></div>'+
+    '<div><label>Sector</label>'+
+      '<input id="ep-sector" list="dl-sectores" value="'+(pos.sector||"").replace(/"/g,"&quot;")+'" style="width:100%;padding:6px 8px;border:.5px solid #ddd;border-radius:7px;font-size:12px;background:#fafafa;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">'+
+    '</div>'+
     '<div><label>Tipo</label><select id="ep-tipo">'+tipoOpts+'</select></div>'+
     '<div><label>Cantidad</label><input id="ep-cant" type="number" step="0.001" value="'+pos.cantidad+'"></div>'+
     '<div><label>PPC USD</label><input id="ep-ppc" type="number" step="0.01" value="'+pos.ppc+'"></div></div>'+
@@ -1207,11 +1215,11 @@ function editarPosicion(ticker){
   overlay.onclick=function(e){ if(e.target===overlay) document.body.removeChild(overlay); };
   document.getElementById("ep-ok").onclick=function(){
     var nombre=document.getElementById("ep-nombre").value.trim();
-    var sector=document.getElementById("ep-sector").value;
+    var sector=document.getElementById("ep-sector").value.trim().toUpperCase();
     var tipo=document.getElementById("ep-tipo").value;
     var cant=parseFloat(document.getElementById("ep-cant").value);
     var ppc=parseFloat(document.getElementById("ep-ppc").value);
-    if(!nombre||isNaN(cant)||cant<=0||isNaN(ppc)||ppc<=0){ alert("Completá todos los campos."); return; }
+    if(!nombre||!sector||isNaN(cant)||cant<=0||isNaN(ppc)||ppc<=0){ alert("Completá todos los campos."); return; }
     upsertExtraPos(ticker,{nombre:nombre,sector:sector,tipo:tipo,cantidad:cant,ppc:ppc});
     reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
     save(); document.body.removeChild(overlay); renderCartera(); renderDashboard();
@@ -1245,7 +1253,7 @@ function renderFlujo(){
   flujos.forEach(function(f){ var y=f.fecha.slice(0,4); if(!byY[y]) byY[y]={ing:0,egr:0}; byY[y].ing+=f.ingresoUSD||0; byY[y].egr+=Math.abs(f.egresoUSD||0); });
   var yrs=Object.keys(byY).sort();
   if(chartFlujo) chartFlujo.destroy();
-  chartFlujo=new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k";}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
+  chartFlujo=new Chart(document.getElementById("cFlujo"),{type:"bar",data:{labels:yrs,datasets:[{label:"Ingresado",data:yrs.map(function(y){return byY[y].ing;}),backgroundColor:"#1565c0",borderRadius:4},{label:"Retirado",data:yrs.map(function(y){return byY[y].egr;}),backgroundColor:"#b71c1c",borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:"top"}},scales:{y:{ticks:{callback:function(v){return "$"+Number(v/1000).toFixed(0)+"k"}},grid:{color:"#f0f0f0"}},x:{grid:{display:false}}}}});
   var srt=flujos.slice().sort(function(a,b){return new Date(b.fecha)-new Date(a.fecha);});
   document.getElementById("tb-flujo").innerHTML=srt.map(function(f){
     var esExtra=extraFlujos.indexOf(f)>=0;
@@ -1325,8 +1333,6 @@ function exportarFlujo(){
 }
 function exportarCompleto(){ exportarCartera(); setTimeout(exportarVentas,400); setTimeout(exportarFlujo,800); }
 
-function checkSectorOtro(){var sel=document.getElementById("c-sector").value;var c=document.getElementById("c-sector-custom");c.style.display=sel==="OTRO"?"block":"none";if(sel==="OTRO")c.focus();}
-function getSectorValue(){var sel=document.getElementById("c-sector").value;if(sel==="OTRO"){var c=document.getElementById("c-sector-custom").value.trim().toUpperCase();return c||"Otro";}return sel;}
 function calcPrev(){
   var c=parseFloat(document.getElementById("c-cant").value)||0;
   var p=parseFloat(document.getElementById("c-precio").value)||0;
@@ -1337,6 +1343,9 @@ function calcPrev(){
   var txt="Total: "+fU(c*p)+" · $"+fmt(c*p*ccl);
   if(ex) txt+=" · Nuevo PM: ~"+fU((ex.ppc*ex.cantidad+p*c)/(ex.cantidad+c));
   document.getElementById("compra-prev").textContent=txt;
+}
+function getSectorValue(){
+  return document.getElementById("c-sector").value.trim().toUpperCase() || "SIN SECTOR";
 }
 function registrarCompra(){
   var tipo=document.getElementById("c-tipo").value;
@@ -1362,9 +1371,8 @@ function registrarCompra(){
   }
   reconstruirEstado({extraPos:extraPos,extraFlujos:extraFlujos,extraVentas:extraVentas,alertas:alertas});
   save(); actualizarSelectVenta();
-  ["c-ticker","c-nombre","c-cant","c-precio","c-com"].forEach(function(id){document.getElementById(id).value="";});
-  document.getElementById("c-sector-custom").value=""; document.getElementById("c-sector-custom").style.display="none";
-  document.getElementById("c-sector").value="TECNOLOGICO"; document.getElementById("compra-prev").textContent="";
+  ["c-ticker","c-nombre","c-cant","c-precio","c-com","c-sector"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("compra-prev").textContent="";
   loadAll(); alert("✅ Compra de "+cant+" "+ticker+" registrada.");
 }
 function registrarVenta(){
@@ -1442,7 +1450,7 @@ function abrirModalFCI(){
     '<div><label>Tipo</label><select id="fci-tipo"><option value="FCI">Fondo Común (FCI)</option><option value="CAUCION">Caución Bursátil</option></select></div>'+
     '<div><label>Nombre / Ticker</label><input id="fci-nombre" placeholder="Ej: FCI Galileo..." style="text-transform:uppercase"></div>'+
     '<div><label>Monto invertido (USD)</label><input id="fci-monto" type="number" step="0.01"></div></div>'+
-    '<div style="display:flex;gap:8px;margin-top:14px"><button id="fci-ok" class="sbtn">✅ Confirmar</button><button id="fci-no" class="sbtn" style="background:#888">Cancelar</button></div></div>';
+    '<div style="display:flex;gap:8px;margin-top:14px"><button id="fci-ok" class="sbtn">✅ Confirmar</button><button id="fci-no" class="sbtn" style="background:#888">Ancelar</button></div></div>';
   document.body.appendChild(overlay);
   document.getElementById("fci-no").onclick=function(){ document.body.removeChild(overlay); };
   document.getElementById("fci-ok").onclick=function(){
@@ -1497,6 +1505,7 @@ document.getElementById("v-fecha").value=hoy();
 document.getElementById("fl-fecha").value=hoy();
 pedirPermisoNotificaciones();
 actualizarSelectVenta();
+actualizarSectoresUI();
 setInterval(loadAll,5*60*1000);
 setInterval(function(){
   if(accessToken&&Object.keys(precios).length>0) checkAlertas();
