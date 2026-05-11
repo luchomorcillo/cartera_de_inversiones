@@ -725,16 +725,47 @@ function fetchFinnhub(tk){
 }
 
 function fetchBono(tk){
-  var map={AL35:"AL35D",GD35:"GD35D",AE38:"AE38D",AL30:"AL30D",GD30:"GD30D"};
-  var sym=map[tk];
-  if(!sym) return Promise.resolve(null);
-  return fetch("https://data912.com/live/arg_gov")
-  .then(function(r){ return r.json(); })
-  .then(function(arr){
-    var b=arr.find(function(x){ return (x.ticker||x.symbol||"")===sym; });
-    if(b){ var p=parseFloat(b.c||b.price||b.last||0); if(p>0) return {precio:p,varHoy:0,precioARS:null}; }
-    return null;
-  }).catch(function(){ return null; });
+  var map = {
+    AL35:"AL35D", GD35:"GD35D", AE38:"AE38D",
+    AL30:"AL30D", GD30:"GD30D", GD41:"GD41D", AL41:"AL41D"
+  };
+  var sym = map[tk] || (tk.endsWith("D") ? tk : tk+"D");
+
+  return fetch("https://data912.com/live/arg_bonds")
+    .then(function(r){ return r.json(); })
+    .then(function(arr){
+      // Buscar versión USD (con D)
+      var b = arr.find(function(x){
+        return (x.symbol || x.ticker || "").toUpperCase() === sym.toUpperCase();
+      });
+
+      if(b){
+        var precio = parseFloat(b.px_ask || b.px_bid || b.c || 0);
+        var varHoy = parseFloat(b.pct_change || 0);
+        console.log("✅ Bono "+tk+" ("+sym+") → USD "+precio+" | var: "+varHoy+"%");
+        if(precio > 0) return { precio: precio, varHoy: varHoy, precioARS: null };
+      }
+
+      // Fallback: versión ARS ÷ MEP
+      var bARS = arr.find(function(x){
+        return (x.symbol || x.ticker || "").toUpperCase() === tk.toUpperCase();
+      });
+      if(bARS){
+        var pARS  = parseFloat(bARS.px_ask || bARS.c || 0);
+        var mep   = (cotiz.mep && cotiz.mep > 100) ? cotiz.mep : 1150;
+        var pUSD  = pARS / mep;
+        var vHoy  = parseFloat(bARS.pct_change || 0);
+        console.log("⚠️ Bono "+tk+" sin versión D — usando ARS÷MEP: "+pARS+"÷"+mep+" = "+pUSD.toFixed(2));
+        if(pUSD > 0) return { precio: pUSD, varHoy: vHoy, precioARS: pARS };
+      }
+
+      console.warn("❌ Bono "+tk+" no encontrado en arg_bonds");
+      return null;
+    })
+    .catch(function(e){
+      console.error("❌ fetchBono error:", e);
+      return null;
+    });
 }
 
 // ══ EXTRACTOR AR BLINDADO Y SIN CACHÉ ══
